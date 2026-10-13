@@ -142,23 +142,6 @@
             padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;
         }
         .btn-copy-name:hover { background: #30363d; color: #fff; }
-
-        /* Modal Overlay */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.85); display: none; justify-content: center;
-            align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(4px);
-        }
-        .modal-container {
-            background: var(--bg-card); border: 1px solid var(--border-color); width: 100%; max-width: 600px;
-            border-radius: 12px; display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 16px 48px rgba(0,0,0,0.9);
-        }
-        .modal-header { padding: 18px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: #1f242d; }
-        .modal-header h3 { margin: 0; font-size: 16px; color: #fff; display: flex; align-items: center; gap: 8px; }
-        .btn-close-modal { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; }
-        .btn-close-modal:hover { color: #fff; }
-        .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
     </style>
 </head>
 <body>
@@ -167,7 +150,7 @@
     <div class="top-banner">
         <div class="banner-title-area">
             <h1>🌐 QC Inspector Online <span class="badge-active" id="activeRulesBadge">Loading Online Rules...</span></h1>
-            <p>Direct Live Google Sheets QC Rules Engine (No Offline Local Overrides).</p>
+            <p>Direct Live Google Sheets QC Rules Engine (CORS Bypass Enabled).</p>
         </div>
         <div style="display: flex; gap: 15px; align-items: center;">
             <div class="creator-card">
@@ -229,8 +212,7 @@
 </div>
 
 <script>
-    // Hardcoded Default Master Google Sheet URL
-    const DEFAULT_GOOGLE_SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQac2ySXFAosTOOt1hEJPrW_sORv65t1aueF15zt2VGTcfnnrFlCgOONS2mCFBg3o_rWq3wHJzT8UTr/pub?output=csv";
+    const TARGET_GOOGLE_SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQac2ySXFAosTOOt1hEJPrW_sORv65t1aueF15zt2VGTcfnnrFlCgOONS2mCFBg3o_rWq3wHJzT8UTr/pub?output=csv";
 
     let JOB_DATABASE = {};
     let ALL_RULES = [];
@@ -245,12 +227,12 @@
     const specsPreviewBar = document.getElementById('specsPreviewBar');
 
     async function initOnlineRules() {
-        await fetchLiveGoogleSheet(DEFAULT_GOOGLE_SHEET_CSV);
+        await fetchLiveGoogleSheet(TARGET_GOOGLE_SHEET_CSV);
     }
 
     async function reFetchLiveRules() {
         activeRulesBadge.textContent = "Refreshing Rules...";
-        let success = await fetchLiveGoogleSheet(DEFAULT_GOOGLE_SHEET_CSV);
+        let success = await fetchLiveGoogleSheet(TARGET_GOOGLE_SHEET_CSV);
         if (success) {
             alert("🎉 Live rules refreshed successfully from Google Sheet!");
         }
@@ -259,10 +241,18 @@
     async function fetchLiveGoogleSheet(url) {
         try {
             activeRulesBadge.textContent = "Syncing Online Sheet...";
-            let response = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
-            if (!response.ok) throw new Error("Could not reach Google Sheet.");
-            let csvText = await response.text();
+            // Using allorigins CORS proxy wrapper to seamlessly bypass browser restrictions
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url + '&t=' + Date.now())}`;
+            let response = await fetch(proxyUrl);
+            if (!response.ok) throw new Error("Could not reach Google Sheet server.");
             
+            let data = await response.json();
+            let csvText = data.contents;
+            
+            if (!csvText || csvText.trim() === "") {
+                throw new Error("Empty response received from Google Sheet.");
+            }
+
             let rows = parseCSV(csvText);
             if (rows.length === 0) {
                 alert("❌ No valid rules found in the Google Sheet.");
