@@ -175,7 +175,7 @@
                 <div class="creator-divider"></div>
                 <div class="creator-sub">Cutting Edger | Professional Photoshop Automation</div>
             </div>
-            <button class="btn-sync-sheet" onclick="openSheetSyncModal()">⚙️ Set Google Sheet URL</button>
+            <button class="btn-sync-sheet" onclick="reFetchLiveRules()">🔄 Refresh Live Rules</button>
         </div>
     </div>
 
@@ -228,34 +228,13 @@
     </div>
 </div>
 
-<!-- Google Sheet Sync Modal -->
-<div class="modal-overlay" id="sheetSyncModal">
-    <div class="modal-container">
-        <div class="modal-header">
-            <h3>📊 Live Google Sheet URL Settings</h3>
-            <button class="btn-close-modal" onclick="closeSheetSyncModal()">×</button>
-        </div>
-        <div class="modal-body">
-            <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-top:0;">
-                Google Sheet theke live rules load korar jonno sheet-ti <b>File > Share > Publish to web</b> kore <b>Comma-separated values (.csv)</b> link ti ekhane set koro. Ekhane ja URL thakbe shobay sheti live use korbe.
-            </p>
-            <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px;">
-                <label style="font-size: 12px; color: var(--text-muted); font-weight: bold;">Google Sheet Published CSV URL *</label>
-                <input type="text" id="sheetCsvUrl" placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv">
-            </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button onclick="saveAndFetchLiveSheet()" style="background: var(--accent-green); color:#fff; border:none; padding: 10px 18px; border-radius: 6px; cursor:pointer; font-weight:bold; font-size:13px;">📥 Save & Load Live Rules Now</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
+    // Hardcoded Default Master Google Sheet URL
+    const DEFAULT_GOOGLE_SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQac2ySXFAosTOOt1hEJPrW_sORv65t1aueF15zt2VGTcfnnrFlCgOONS2mCFBg3o_rWq3wHJzT8UTr/pub?output=csv";
+
     let JOB_DATABASE = {};
     let ALL_RULES = [];
     let SELECTED_JOB_ID = "";
-
-    const SHEET_URL_KEY = 'QC_ONLINE_LIVE_SHEET_URL';
 
     const jobSearchInput = document.getElementById('jobSearchInput');
     const jobDropdownList = document.getElementById('jobDropdownList');
@@ -266,32 +245,14 @@
     const specsPreviewBar = document.getElementById('specsPreviewBar');
 
     async function initOnlineRules() {
-        let savedUrl = localStorage.getItem(SHEET_URL_KEY);
-        if (!savedUrl) {
-            openSheetSyncModal();
-            activeRulesBadge.textContent = "Google Sheet URL Required";
-            return;
-        }
-        await fetchLiveGoogleSheet(savedUrl);
+        await fetchLiveGoogleSheet(DEFAULT_GOOGLE_SHEET_CSV);
     }
 
-    function openSheetSyncModal() {
-        document.getElementById('sheetSyncModal').style.display = 'flex';
-        document.getElementById('sheetCsvUrl').value = localStorage.getItem(SHEET_URL_KEY) || '';
-    }
-    function closeSheetSyncModal() { document.getElementById('sheetSyncModal').style.display = 'none'; }
-
-    async function saveAndFetchLiveSheet() {
-        let url = document.getElementById('sheetCsvUrl').value.trim();
-        if (!url) {
-            alert("Please enter a valid Google Sheet CSV URL!");
-            return;
-        }
-        localStorage.setItem(SHEET_URL_KEY, url);
-        let success = await fetchLiveGoogleSheet(url);
+    async function reFetchLiveRules() {
+        activeRulesBadge.textContent = "Refreshing Rules...";
+        let success = await fetchLiveGoogleSheet(DEFAULT_GOOGLE_SHEET_CSV);
         if (success) {
-            closeSheetSyncModal();
-            alert("🎉 Live rules fetched successfully from Google Sheet!");
+            alert("🎉 Live rules refreshed successfully from Google Sheet!");
         }
     }
 
@@ -313,7 +274,7 @@
             buildDatabaseFromRules();
             return true;
         } catch (err) {
-            alert("❌ Failed to fetch Google Sheet rules.\nCheck Internet connection or URL.\nError: " + err.message);
+            alert("❌ Failed to fetch Google Sheet rules.\nCheck Internet connection.\nError: " + err.message);
             activeRulesBadge.textContent = "Sync Failed ❌";
             return false;
         }
