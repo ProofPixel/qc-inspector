@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Job QC Inspector - Standalone Master Edition</title>
+    <title>Job QC Inspector - Master Edition</title>
     <style>
         :root {
             --bg-main: #0d1117;
@@ -157,11 +157,11 @@
         .card-header { font-weight: bold; font-size: 15px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
         .card-header.fail-title { color: var(--accent-red); }
 
-        .img-thumb-preview {
-            width: 44px; height: 44px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-color);
-            cursor: grab; transition: transform 0.2s; background: #0d1117; display: inline-block; vertical-align: middle;
+        .img-type-badge {
+            width: 44px; height: 44px; border-radius: 6px; border: 1px solid var(--border-color);
+            background: #21262d; color: var(--accent-blue); display: inline-flex; justify-content: center;
+            align-items: center; font-weight: bold; font-size: 12px; text-transform: uppercase;
         }
-        .img-thumb-preview:hover { transform: scale(1.2); border-color: var(--accent-blue); }
 
         .criteria-table { width: 100%; border-collapse: collapse; font-size: 13px; }
         .criteria-table td { padding: 6px 10px; border-bottom: 1px solid #21262d; }
@@ -173,6 +173,12 @@
         .icon-fail { color: var(--accent-red); }
         
         .no-issues-msg { text-align: center; color: #3fb950; padding: 30px; font-size: 16px; font-weight: bold; background: rgba(35,134,54,0.1); border-radius: 8px; border: 1px solid rgba(63,185,80,0.3); }
+
+        .btn-copy-name {
+            background: #21262d; border: 1px solid var(--border-color); color: var(--accent-blue);
+            padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;
+        }
+        .btn-copy-name:hover { background: #30363d; color: #fff; }
 
         /* Modal Overlay */
         .modal-overlay {
@@ -273,7 +279,7 @@
     </div>
 </div>
 
-<!-- Manage QC Rules Modal (Password Protected) -->
+<!-- Manage QC Rules Modal -->
 <div class="modal-overlay" id="rulesModal">
     <div class="modal-container">
         <div class="modal-header">
@@ -380,7 +386,6 @@
 <script>
     const ADMIN_PASSWORD = "sajib123";
 
-    // All exact 53 Master Rules from the Excel file
     const DEFAULT_MASTER_RULES = [
         ["Clipping", "Clipping Aslist", ".jpg,.jpeg,.tif,.psd", "", "", "300", "TRUE", "Path 1", "", ""],
         ["Clipping", "Ecom Masking", ".jpg,.jpeg,.tif,.psd", "", "", "300", "TRUE", "Path 1", "", ""],
@@ -450,7 +455,7 @@
     const specsPreviewBar = document.getElementById('specsPreviewBar');
 
     function loadRulesFromStorage() {
-        const STORAGE_KEY = 'JOB_QC_MASTER_RULES_V6_STRICT';
+        const STORAGE_KEY = 'JOB_QC_MASTER_RULES_V13_FAST';
         let stored = localStorage.getItem(STORAGE_KEY);
         if (!stored) {
             ALL_RULES = DEFAULT_MASTER_RULES;
@@ -477,7 +482,7 @@
             const presetName = row[1];
             if (!jobId || !presetName) return;
 
-            const exts = (row[2] || '').split(';').map(e => e.trim().toLowerCase().startsWith('.') ? e.trim().toLowerCase() : '.' + e.trim().toLowerCase());
+            const exts = (row[2] || '').split(',').map(e => e.trim().toLowerCase().startsWith('.') ? e.trim().toLowerCase() : '.' + e.trim().toLowerCase()).filter(e => e !== '.');
             const rawWidthStr = row[3] || '';
             const rawHeightStr = row[4] || '';
             const dpi = parseInt(row[5]) || 300;
@@ -662,7 +667,7 @@
                 checks.push({ label: "DPI / Resolution", val: meta.dpi ? `${meta.dpi} DPI` : "Unknown DPI", pass: dpiPass, expected: `${rules.dpi} DPI` });
                 if (!dpiPass) overallPass = false;
 
-                // 4. Color Profile Check (Strict Evaluation)
+                // 4. Color Profile Check
                 if (rules.colorProfile && rules.colorProfile.trim() !== "") {
                     let reqProf = rules.colorProfile.toLowerCase().replace(/[^a-z0-9]/g, '');
                     let detProf = meta.detectedProfile.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -672,16 +677,19 @@
                     if (!profilePass) overallPass = false;
                 }
 
-                // 5. Background RGB Check (Top 2 Corners Sampling)
+                // 5. Background RGB Check
                 if (rules.backgroundColor && rules.backgroundColor.trim() !== "") {
                     let reqParts = rules.backgroundColor.split('/').map(x => parseInt(x.trim()));
                     let detParts = meta.detectedBgColor.split('/').map(x => parseInt(x.trim()));
                     let bgPass = false;
                     
                     if (reqParts.length === 3 && detParts.length === 3) {
-                        bgPass = meta.bgTopCornersPass && (Math.abs(reqParts[0] - detParts[0]) <= 2 && Math.abs(reqParts[1] - detParts[1]) <= 2 && Math.abs(reqParts[2] - detParts[2]) <= 2);
+                        const rDiff = Math.abs(reqParts[0] - detParts[0]);
+                        const gDiff = Math.abs(reqParts[1] - detParts[1]);
+                        const bDiff = Math.abs(reqParts[2] - detParts[2]);
+                        bgPass = (rDiff <= 2 && gDiff <= 2 && bDiff <= 2);
                     }
-                    checks.push({ label: "Background Color (Top 2 Corners RGB)", val: meta.detectedBgColor || "Unable to read", pass: bgPass, expected: rules.backgroundColor });
+                    checks.push({ label: "Background Color (Top-Left RGB)", val: meta.detectedBgColor || "Unable to read", pass: bgPass, expected: rules.backgroundColor });
                     if (!bgPass) overallPass = false;
                 }
 
@@ -706,7 +714,7 @@
             }
 
             if (overallPass) totalPassed++;
-            else { totalFailed++; renderFailedCard(file.webkitRelativePath || file.name, checks, file); }
+            else { totalFailed++; renderFailedCard(file, checks); }
         }
 
         if (totalFailed === 0 && totalPassed > 0) {
@@ -715,12 +723,14 @@
         updateDashboard(files.length, totalPassed, totalFailed);
     }
 
-    function renderFailedCard(fileName, checks, fileObj) {
+    function renderFailedCard(fileObj, checks) {
         const reportContainer = document.getElementById('reportContainer');
         const card = document.createElement('div');
         card.className = 'image-card';
         
-        let thumbCanvasId = 'thumb_' + Math.random().toString(36).substr(2, 9);
+        const fullDisplayPath = fileObj.webkitRelativePath || fileObj.name;
+        const fileNameOnly = fileObj.name;
+        const fileExt = fileNameOnly.split('.').pop().toUpperCase();
 
         let rowsHtml = '';
         checks.forEach(c => {
@@ -733,45 +743,27 @@
         card.innerHTML = `
             <div class="card-header fail-title">
                 <div style="display:flex; align-items:center; gap:12px;">
-                    <canvas id="${thumbCanvasId}" class="img-thumb-preview" title="Drag & Drop image into Photoshop to edit!"></canvas>
-                    <span>❌ ${fileName}</span>
+                    <div class="img-type-badge">${fileExt}</div>
+                    <span>❌ ${fullDisplayPath}</span>
                 </div>
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <span style="color:var(--accent-blue); font-size:12px; cursor:pointer;" onclick="alert('💡 Tip: Click and DRAG the thumbnail image on the left directly into Adobe Photoshop to edit instantly!')">💡 Drag Thumbnail to Photoshop</span>
+                    <button class="btn-copy-name" title="Copy file name for Photoshop Ctrl+O" onclick="copyText(this, '${fileNameOnly.replace(/'/g, "\\'")}')">📋 Copy File Name</button>
                     <span style="color:var(--accent-red); font-weight:bold;">FAILED</span>
                 </div>
             </div>
             <table class="criteria-table">${rowsHtml}</table>
         `;
         reportContainer.appendChild(card);
-
-        // Render Canvas Thumbnail for All formats (.tif, .psd, .jpg)
-        setTimeout(() => { generateCanvasThumbnail(fileObj, thumbCanvasId); }, 50);
     }
 
-    function generateCanvasThumbnail(fileObj, canvasId) {
-        const canvas = document.getElementById(canvasId);
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        canvas.width = 44;
-        canvas.height = 44;
-
-        const img = new Image();
-        const url = URL.createObjectURL(fileObj);
-        img.onload = () => {
-            ctx.drawImage(img, 0, 0, 44, 44);
-            URL.revokeObjectURL(url);
-        };
-        img.onerror = () => {
-            // Placeholder icon if browser canvas cannot parse native TIF/PSD
-            ctx.fillStyle = "#21262d";
-            ctx.fillRect(0, 0, 44, 44);
-            ctx.fillStyle = "#2f81f7";
-            ctx.font = "10px sans-serif";
-            ctx.fillText("IMG/PSD", 2, 26);
-            URL.revokeObjectURL(url);
-        };
-        img.src = url;
+    function copyText(btnEl, textToCopy) {
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            let originalText = btnEl.innerText;
+            btnEl.innerText = "✅ Copied!";
+            setTimeout(() => { btnEl.innerText = originalText; }, 2000);
+        }).catch(() => {
+            prompt("Copy text:", textToCopy);
+        });
     }
 
     function updateDashboard(total, pass, fail) {
@@ -812,6 +804,14 @@
                             const tag = view.getUint16(entryOffset, isLE);
                             if (tag === 256) width = getTifVal(view, entryOffset, isLE);
                             else if (tag === 257) height = getTifVal(view, entryOffset, isLE);
+                            else if (tag === 283) {
+                                const valOffset = view.getUint32(entryOffset + 8, isLE);
+                                if (valOffset < view.byteLength - 8) {
+                                    const num = view.getUint32(valOffset, isLE);
+                                    const den = view.getUint32(valOffset + 4, isLE);
+                                    if (den > 0) dpi = Math.round(num / den);
+                                }
+                            }
                         }
                     } else if (ext === 'jpg' || ext === 'jpeg') {
                         let offset = 2;
@@ -840,7 +840,7 @@
                     }
 
                     const img = new Image();
-                    const url = URL.createObjectURL(file);
+                    const blobUrl = URL.createObjectURL(file);
                     img.onload = () => {
                         try {
                             const canvas = document.createElement('canvas');
@@ -851,25 +851,17 @@
                             const ctx = canvas.getContext('2d', { colorSpace: 'srgb', willReadFrequently: true });
                             ctx.drawImage(img, 0, 0);
                             
-                            // Top 2 Corners Sampling only (Top-Left and Top-Right)
                             const p1 = ctx.getImageData(0, 0, 1, 1).data;
-                            const p2 = ctx.getImageData(w - 1, 0, 1, 1).data;
-
                             const detectedBgColor = `${p1[0]}/${p1[1]}/${p1[2]}`;
-                            
-                            // Check if top corners match each other
-                            const bgTopCornersPass = (
-                                Math.abs(p1[0] - p2[0]) <= 3 && Math.abs(p1[1] - p2[1]) <= 3 && Math.abs(p1[2] - p2[2]) <= 3
-                            );
 
                             if (!width) width = img.naturalWidth;
                             if (!height) height = img.naturalHeight;
-                            URL.revokeObjectURL(url);
-                            resolve({ width, height, dpi, hasPath, foundPaths, detectedProfile, detectedBgColor, bgTopCornersPass, rawText: combinedText });
-                        } catch (err) { URL.revokeObjectURL(url); resolve({ width, height, dpi, hasPath, foundPaths, detectedProfile, detectedBgColor: "255/255/255", bgTopCornersPass: true, rawText: combinedText }); }
+                            URL.revokeObjectURL(blobUrl);
+                            resolve({ width, height, dpi, hasPath, foundPaths, detectedProfile, detectedBgColor, rawText: combinedText });
+                        } catch (err) { URL.revokeObjectURL(blobUrl); resolve({ width, height, dpi, hasPath, foundPaths, detectedProfile, detectedBgColor: "255/255/255", rawText: combinedText }); }
                     };
-                    img.onerror = () => { URL.revokeObjectURL(url); resolve({ width, height, dpi, hasPath, foundPaths, detectedProfile, detectedBgColor: "255/255/255", bgTopCornersPass: true, rawText: combinedText }); };
-                    img.src = url;
+                    img.onerror = () => { URL.revokeObjectURL(blobUrl); resolve({ width, height, dpi, hasPath, foundPaths, detectedProfile, detectedBgColor: "255/255/255", rawText: combinedText }); };
+                    img.src = blobUrl;
                 } catch (err) { reject(new Error("File parsing failed.")); }
             };
             reader.readAsArrayBuffer(file.slice(0, 10 * 1024 * 1024));
@@ -988,7 +980,7 @@
             ALL_RULES.push(newRow);
         }
 
-        localStorage.setItem('JOB_QC_MASTER_RULES_V6_STRICT', JSON.stringify(ALL_RULES));
+        localStorage.setItem('JOB_QC_MASTER_RULES_V13_FAST', JSON.stringify(ALL_RULES));
         buildDatabaseFromRules();
         closeEditorModal();
         renderRulesTable();
@@ -998,7 +990,7 @@
     function deleteRule(index) {
         if (confirm("Are you sure you want to delete this rule?")) {
             ALL_RULES.splice(index, 1);
-            localStorage.setItem('JOB_QC_MASTER_RULES_V6_STRICT', JSON.stringify(ALL_RULES));
+            localStorage.setItem('JOB_QC_MASTER_RULES_V13_FAST', JSON.stringify(ALL_RULES));
             buildDatabaseFromRules();
             renderRulesTable();
         }
