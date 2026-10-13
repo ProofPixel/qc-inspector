@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Job QC Inspector - Standalone Professional Edition</title>
+    <title>Job QC Inspector - Standalone Master Edition</title>
     <style>
         :root {
             --bg-main: #0d1117;
@@ -205,7 +205,7 @@
 <div class="container">
     <div class="top-banner">
         <div class="banner-title-area">
-            <h1>🎯 Job QC Inspector <span class="badge-active" id="activeRulesBadge">Standalone Edition</span></h1>
+            <h1>🎯 Job QC Inspector <span class="badge-active" id="activeRulesBadge">Master Edition</span></h1>
             <p>Automated client image specification & quality compliance validator (No Excel Required).</p>
         </div>
         <div style="display: flex; gap: 15px; align-items: center;">
@@ -374,23 +374,61 @@
 <script>
     const ADMIN_PASSWORD = "sajib123";
 
+    // All 53 Rules directly preloaded from Master Rules.xlsx
     const DEFAULT_MASTER_RULES = [
+        ["Clipping", "Clipping Aslist", ".jpg,.jpeg,.tif,.psd", "", "", "300", "TRUE", "Path 1", "", ""],
+        ["Clipping", "Ecom Masking", ".jpg,.jpeg,.tif,.psd", "", "", "300", "TRUE", "Path 1", "", ""],
         ["335780", "Tabletop", ".tif", ">=5000", ">=5000", "300", "FALSE", "", "ECI-RGB", "255/255/255"],
         ["335780", "Tabletop - Overview", ".tif", ">=5000", ">=5000", "300", "FALSE", "", "ECI-RGB", "255/255/255"],
         ["335780", "Montage - Verpackung", ".tif", "2560", "2560", "96", "FALSE", "", "sRGB", "255/255/255"],
         ["335780", "Montage -TecDoc", ".jpg", "600", "400", "96", "FALSE", "", "sRGB", "255/255/255"],
+        ["335780", "360 View", ".tif", "", "", "300", "FALSE", "", "ECI-RGB", "255/255/255"],
         ["202060", "Hanger_RECOLOR", ".jpg", "2550", "3584", "300", "TRUE", "Path 1", "ECI-RGB", "242/242/242"],
         ["202060", "On Model/ON MODEL LINGERIE", ".jpg", "2560/2336", "3584/1144", "300", "TRUE", "Path 1", "ECI-RGB", ""],
         ["202060", "Hanger", ".jpg", "2560", "3584", "300", "TRUE", "Path 1", "ECI-RGB", "242/242/242"],
         ["202060", "Flat", ".jpg", "2550", "3584", "300", "TRUE", "Path 1", "ECI-RGB", "242/242/242"],
+        ["202061", "AI RP MANNEQUIN_TABLETOP", ".jpg", "", "", "300", "FALSE", "", "sRGB", "255/255/255"],
         ["202060", "Tabletop", ".jpg", "2550", "3584", "300", "TRUE", "Path 1", "ECI-RGB", "242/242/242"],
-        ["208041", "ON MODEL_LOOKS", ".tif", "4689/6720", "6720/4689", "300", "TRUE", "Path 1", "Adobe RGB", ""],
+        ["208041", "ON MODEL_LOOKS", ".tif", "4689/6720", "6720/4689", "300", "FALSE", "Path 1", "Adobe RGB", ""],
         ["208041", "On Model", ".jpg", "2500", "3582", "300", "TRUE", "Path 1", "Adobe RGB", "227/226/224"],
+        ["301271", "MANNEQUIN_FLATS_TABLETOP", "", "4043", "6065", "300", "TRUE", "Path 1", "sRGB", ""],
+        ["301272", "On Model Ecom", ".jpg", "3894", "5563", "300", "FALSE", "", "sRGB", ""],
+        ["301271", "On Model LookBook", "", "", "", "", "FALSE", "", "", ""],
         ["331777", "Mannequin-LSCN", ".jpg", "1801", "2600", "300", "TRUE", "Path 1", "sRGB", "255/255/255"],
         ["331777", "ON MODEL-LSCN", ".jpg", "1801", "2600", "300", "TRUE", "Path 1,Path 2,Path 3", "sRGB", ""],
+        ["331777", "ON MODEL-Lascana", ".jpg", "1801", "2600", "300", "TRUE", "Path 1", "sRGB", "241/241/241"],
         ["331777", "Mannequin-Lascana", ".tif", "2663", "3844", "300", "TRUE", "Path 1", "ECI-RGB", "255/255/255"],
+        ["331777", "Ai_RP_MAnnequin", ".jpg", "", "", "300", "FALSE", "", "sRGB", "255/255/255"],
+        ["301981", "_Mannequin", ".tif", "1040", "1500", "300", "FALSE", "", "sRGB", ""],
+        ["301283", "On Model", ".tif", "1524", "2200", "300", "TRUE", "Path 1", "ECI-RGB", "237/237/237"],
+        ["301283", "Flat", ".tif", "3810", "5500", "300", "TRUE", "Path 1", "ECI-RGB", "255/255/255"],
+        ["301283", "Mannequin", ".tif", "3810", "5500", "300", "TRUE", "Path 1", "ECI-RGB", "255/255/255"],
+        ["301283", "Table Top", ".tif", "3810", "5500", "300", "TRUE", "Path 1", "ECI-RGB", "255/255/255"],
+        ["301283", "Table Top_300", ".tif", "3810", "5500", "300", "TRUE", "Path 1", "ECI-RGB", "255/255/255"],
+        ["301283", "Overview", ".tif", "3810", "5500", "300", "TRUE", "Path 1", "ECI-RGB", "255/255/255"],
+        ["301093", "Tabletop", ".tif", "2500", "3582", "300", "TRUE", "Path 1", "sRGB", "255/255/255"],
+        ["301093", "Flats", ".tif", "2500", "3582", "300", "FALSE", "", "sRGB", "255/255/255"],
         ["329685", "Tabletop", ".tif", "3543", "2362", "300", "TRUE", "Path 1", "ECI-RGB", "255/255/255"],
-        ["301093", "Tabletop", ".tif", "2500", "3582", "300", "TRUE", "Path 1", "sRGB", "255/255/255"]
+        ["329685", "Mannequin", ".tif", "3543", "2362", "300", "TRUE", "Path 1", "ECI-RGB", "255/255/255"],
+        ["329685", "On Model", ".tif", "3543", "2362", "300", "TRUE", "Path 1", "ECI-RGB", "255/255/255"],
+        ["329685", "Hanger", ".tif", "3543", "2362", "300", "TRUE", "Path 1", "ECI-RGB", "255/255/255"],
+        ["301271", "Variants_On Model", ".jpg,.jpeg,.tif,.psd", "2500", "3582", "300", "FALSE", "", "sRGB", ""],
+        ["301271", "ecom", ".jpg,.jpeg,.tif,.psd", "2500", "3582", "300", "FALSE", "", "sRGB", ""],
+        ["301271", "Mannequin", ".jpg,.jpeg,.tif,.psd", "2500", "3582", "300", "FALSE", "", "sRGB", ""],
+        ["301271", "Tabletop", ".jpg,.jpeg,.tif,.psd", "2500", "3582", "300", "FALSE", "", "sRGB", ""],
+        ["301271", "Flat", ".jpg,.jpeg,.tif,.psd", "2500", "3582", "300", "FALSE", "", "sRGB", ""],
+        ["301271", "Variants_Flat", ".jpg,.jpeg,.tif,.psd", "2500", "3582", "300", "FALSE", "", "sRGB", ""],
+        ["301271", "Variants_Tabletop", ".jpg,.jpeg,.tif,.psd", "2500", "3582", "300", "FALSE", "", "sRGB", ""],
+        ["331777", "Variants_On Model", ".jpg,.jpeg,.tif,.psd", "2500", "3582", "300", "FALSE", "", "sRGB", ""],
+        ["331777", "ecom", ".jpg,.jpeg,.tif,.psd", "2500", "3582", "300", "FALSE", "", "sRGB", ""],
+        ["331777", "Mannequin", ".jpg,.jpeg,.tif,.psd", "2500", "3582", "300", "FALSE", "", "sRGB", ""],
+        ["331777", "Tabletop", ".jpg,.jpeg,.tif,.psd", "2500", "3582", "300", "FALSE", "", "sRGB", ""],
+        ["331777", "Flat", ".jpg,.jpeg,.tif,.psd", "2500", "3582", "300", "FALSE", "", "sRGB", ""],
+        ["331777", "Variants_Flat", ".jpg,.jpeg,.tif,.psd", "2500", "3582", "300", "FALSE", "", "sRGB", ""],
+        ["331777", "Variants_Tabletop", ".jpg,.jpeg,.tif,.psd", "2500", "3582", "300", "FALSE", "", "sRGB", ""],
+        ["301283", "ecom", ".jpg,.jpeg,.tif,.psd", "2500", "3582", "300", "FALSE", "", "sRGB", ""],
+        ["301283", "Variants_Flat", ".jpg,.jpeg,.tif,.psd", "2500", "3582", "300", "FALSE", "", "sRGB", ""],
+        ["301283", "Variants_Tabletop", ".jpg,.jpeg,.tif,.psd", "2500", "3582", "300", "FALSE", "", "sRGB", ""]
     ];
 
     let JOB_DATABASE = {};
@@ -406,10 +444,10 @@
     const specsPreviewBar = document.getElementById('specsPreviewBar');
 
     function loadRulesFromStorage() {
-        let stored = localStorage.getItem('JOB_QC_MASTER_RULES');
+        let stored = localStorage.getItem('JOB_QC_MASTER_RULES_V2');
         if (!stored) {
             ALL_RULES = DEFAULT_MASTER_RULES;
-            localStorage.setItem('JOB_QC_MASTER_RULES', JSON.stringify(ALL_RULES));
+            localStorage.setItem('JOB_QC_MASTER_RULES_V2', JSON.stringify(ALL_RULES));
         } else {
             try { ALL_RULES = JSON.parse(stored); } catch(e) { ALL_RULES = DEFAULT_MASTER_RULES; }
         }
@@ -437,7 +475,7 @@
         });
 
         JOB_DATABASE = newDb;
-        activeRulesBadge.textContent = `${ALL_RULES.length} Rules Active (Standalone)`;
+        activeRulesBadge.textContent = `${ALL_RULES.length} Rules Active`;
         initJobIds(jobSearchInput.value.replace("JOB ID:", "").trim());
     }
 
@@ -506,9 +544,9 @@
         }
 
         let html = `<span class="specs-label">REQUIRED SPECS:</span>`;
-        html += `<span class="spec-chip">📐 ${rules.rawWidthStr} × ${rules.rawHeightStr}</span>`;
+        html += `<span class="spec-chip">📐 ${rules.rawWidthStr || 'Any'} × ${rules.rawHeightStr || 'Any'}</span>`;
         html += `<span class="spec-chip">🎯 ${rules.dpi} DPI</span>`;
-        html += `<span class="spec-chip">📄 ${rules.ext.join(', ').toUpperCase()}</span>`;
+        html += `<span class="spec-chip">📄 ${rules.ext.join(', ').toUpperCase() || 'ANY'}</span>`;
         if (rules.checkPath) html += `<span class="spec-chip">✂️ Path: ${rules.targetPathName || 'Any'}</span>`;
         if (rules.colorProfile) html += `<span class="spec-chip">🎨 ${rules.colorProfile}</span>`;
         if (rules.backgroundColor) html += `<span class="spec-chip">🖌️ BG: ${rules.backgroundColor}</span>`;
@@ -563,7 +601,7 @@
             let checks = [];
             let overallPass = true;
 
-            const extPass = rules.ext.includes(fileExt);
+            const extPass = rules.ext.length === 0 || rules.ext.includes(fileExt);
             checks.push({ label: "File Format / Extension", val: `${formatName} (${fileExt})`, pass: extPass, expected: rules.ext.join(" / ") });
             if (!extPass) overallPass = false;
 
@@ -574,7 +612,10 @@
                 let expectedDimStr = "";
                 const maxDim = Math.max(meta.width, meta.height);
 
-                if (rules.rawWidthStr.includes(">=")) {
+                if (!rules.rawWidthStr || rules.rawWidthStr === "") {
+                    dimPass = true;
+                    expectedDimStr = "Any Dimensions";
+                } else if (rules.rawWidthStr.includes(">=")) {
                     const minVal = parseInt(rules.rawWidthStr.replace(">=", "").trim()) || 5000;
                     dimPass = (maxDim >= minVal);
                     expectedDimStr = `Long side ≥ ${minVal}px`;
@@ -795,7 +836,7 @@
             tr.innerHTML = `
                 <td><b>${r[0] || ''}</b></td>
                 <td><span style="background:#21262d; padding:3px 8px; border-radius:4px; border:1px solid var(--border-color);">${r[1] || ''}</span></td>
-                <td><code>${r[3] || ''} × ${r[4] || ''}</code></td>
+                <td><code>${r[3] || 'Any'} × ${r[4] || 'Any'}</code></td>
                 <td><code>${r[5] || '300'} DPI</code></td>
                 <td>${(r[6] && r[6].toUpperCase() === 'TRUE') ? '✂️ ' + (r[7] || 'Path Required') : 'No Path'}</td>
                 <td>🎨 ${r[8] || 'sRGB'}</td>
@@ -868,7 +909,7 @@
             ALL_RULES.push(newRow);
         }
 
-        localStorage.setItem('JOB_QC_MASTER_RULES', JSON.stringify(ALL_RULES));
+        localStorage.setItem('JOB_QC_MASTER_RULES_V2', JSON.stringify(ALL_RULES));
         buildDatabaseFromRules();
         closeEditorModal();
         renderRulesTable();
@@ -878,7 +919,7 @@
     function deleteRule(index) {
         if (confirm("Are you sure you want to delete this rule?")) {
             ALL_RULES.splice(index, 1);
-            localStorage.setItem('JOB_QC_MASTER_RULES', JSON.stringify(ALL_RULES));
+            localStorage.setItem('JOB_QC_MASTER_RULES_V2', JSON.stringify(ALL_RULES));
             buildDatabaseFromRules();
             renderRulesTable();
         }
