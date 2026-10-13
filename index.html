@@ -150,7 +150,7 @@
     <div class="top-banner">
         <div class="banner-title-area">
             <h1>🌐 QC Inspector Online <span class="badge-active" id="activeRulesBadge">Loading Online Rules...</span></h1>
-            <p>Direct Live Google Sheets QC Rules Engine (CORS Bypass Enabled).</p>
+            <p>Direct Live Google Sheets QC Rules Engine (Fixed BG Color Detection).</p>
         </div>
         <div style="display: flex; gap: 15px; align-items: center;">
             <div class="creator-card">
@@ -241,7 +241,6 @@
     async function fetchLiveGoogleSheet(url) {
         try {
             activeRulesBadge.textContent = "Syncing Online Sheet...";
-            // Using allorigins CORS proxy wrapper to seamlessly bypass browser restrictions
             const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url + '&t=' + Date.now())}`;
             let response = await fetch(proxyUrl);
             if (!response.ok) throw new Error("Could not reach Google Sheet server.");
@@ -502,7 +501,7 @@
                     if (!profilePass) overallPass = false;
                 }
 
-                // 5. Background RGB Check
+                // 5. Background RGB Check (Fixed with inner offset 5,5)
                 if (rules.backgroundColor && rules.backgroundColor.trim() !== "") {
                     let reqParts = rules.backgroundColor.split('/').map(x => parseInt(x.trim()));
                     let detParts = meta.detectedBgColor.split('/').map(x => parseInt(x.trim()));
@@ -512,9 +511,9 @@
                         const rDiff = Math.abs(reqParts[0] - detParts[0]);
                         const gDiff = Math.abs(reqParts[1] - detParts[1]);
                         const bDiff = Math.abs(reqParts[2] - detParts[2]);
-                        bgPass = (rDiff <= 2 && gDiff <= 2 && bDiff <= 2);
+                        bgPass = (rDiff <= 3 && gDiff <= 3 && bDiff <= 3);
                     }
-                    checks.push({ label: "Background Color (Top-Left RGB)", val: meta.detectedBgColor || "Unable to read", pass: bgPass, expected: rules.backgroundColor });
+                    checks.push({ label: "Background Color (RGB)", val: meta.detectedBgColor || "Unable to read", pass: bgPass, expected: rules.backgroundColor });
                     if (!bgPass) overallPass = false;
                 }
 
@@ -676,7 +675,8 @@
                             const ctx = canvas.getContext('2d', { colorSpace: 'srgb', willReadFrequently: true });
                             ctx.drawImage(img, 0, 0);
                             
-                            const p1 = ctx.getImageData(0, 0, 1, 1).data;
+                            // Sample background from inner coordinate (5, 5) to avoid edge/border noise
+                            const p1 = ctx.getImageData(5, 5, 1, 1).data;
                             const detectedBgColor = `${p1[0]}/${p1[1]}/${p1[2]}`;
 
                             if (!width) width = img.naturalWidth;
