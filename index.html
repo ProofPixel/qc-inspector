@@ -157,6 +157,12 @@
         .card-header { font-weight: bold; font-size: 15px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
         .card-header.fail-title { color: var(--accent-red); }
 
+        .img-thumb-preview {
+            width: 44px; height: 44px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-color);
+            cursor: grab; transition: transform 0.2s; background: #0d1117; display: inline-block; vertical-align: middle;
+        }
+        .img-thumb-preview:hover { transform: scale(1.2); border-color: var(--accent-blue); }
+
         .criteria-table { width: 100%; border-collapse: collapse; font-size: 13px; }
         .criteria-table td { padding: 6px 10px; border-bottom: 1px solid #21262d; }
         .criteria-table tr:last-child td { border-bottom: none; }
@@ -206,7 +212,7 @@
     <div class="top-banner">
         <div class="banner-title-area">
             <h1>🎯 Job QC Inspector <span class="badge-active" id="activeRulesBadge">53 Rules Loaded</span></h1>
-            <p>Automated client image specification & quality compliance validator (No Excel Required).</p>
+            <p>Automated client image specification & quality compliance validator.</p>
         </div>
         <div style="display: flex; gap: 15px; align-items: center;">
             <div class="creator-card">
@@ -444,10 +450,8 @@
     const specsPreviewBar = document.getElementById('specsPreviewBar');
 
     function loadRulesFromStorage() {
-        // Force refresh storage version to clear old cache conflicts
-        const STORAGE_KEY = 'JOB_QC_MASTER_RULES_FINAL_V1';
+        const STORAGE_KEY = 'JOB_QC_MASTER_RULES_V6_STRICT';
         let stored = localStorage.getItem(STORAGE_KEY);
-        
         if (!stored) {
             ALL_RULES = DEFAULT_MASTER_RULES;
             localStorage.setItem(STORAGE_KEY, JSON.stringify(ALL_RULES));
@@ -613,13 +617,15 @@
             let checks = [];
             let overallPass = true;
 
-            const extPass = rules.ext.length === 0 || rules.ext.includes(fileExt);
+            // 1. Extension Check
+            const extPass = (rules.ext.length === 0 || rules.ext.some(e => e.toLowerCase() === fileExt));
             checks.push({ label: "File Format / Extension", val: `${formatName} (${fileExt})`, pass: extPass, expected: rules.ext.join(" / ") });
             if (!extPass) overallPass = false;
 
             try {
                 const meta = await getUniversalMetadata(file, rules.checkPath, rules.targetPathName);
                 
+                // 2. Dimensions Check
                 let dimPass = false;
                 let expectedDimStr = "";
                 const maxDim = Math.max(meta.width, meta.height);
@@ -651,11 +657,13 @@
                 checks.push({ label: "Dimensions", val: `${meta.width} × ${meta.height} px`, pass: dimPass, expected: expectedDimStr });
                 if (!dimPass) overallPass = false;
 
+                // 3. DPI Check
                 const dpiPass = (meta.dpi === rules.dpi);
                 checks.push({ label: "DPI / Resolution", val: meta.dpi ? `${meta.dpi} DPI` : "Unknown DPI", pass: dpiPass, expected: `${rules.dpi} DPI` });
                 if (!dpiPass) overallPass = false;
 
-                if (rules.colorProfile && rules.colorProfile !== "") {
+                // 4. Color Profile Check (Strict Evaluation)
+                if (rules.colorProfile && rules.colorProfile.trim() !== "") {
                     let reqProf = rules.colorProfile.toLowerCase().replace(/[^a-z0-9]/g, '');
                     let detProf = meta.detectedProfile.toLowerCase().replace(/[^a-z0-9]/g, '');
                     let profilePass = (detProf.includes(reqProf) || reqProf.includes(detProf) || (reqProf.includes("eci") && meta.rawText.includes("eci")));
@@ -664,17 +672,20 @@
                     if (!profilePass) overallPass = false;
                 }
 
+                // 5. Background RGB Check (Top 2 Corners Sampling)
                 if (rules.backgroundColor && rules.backgroundColor.trim() !== "") {
                     let reqParts = rules.backgroundColor.split('/').map(x => parseInt(x.trim()));
                     let detParts = meta.detectedBgColor.split('/').map(x => parseInt(x.trim()));
                     let bgPass = false;
+                    
                     if (reqParts.length === 3 && detParts.length === 3) {
-                        bgPass = (Math.abs(reqParts[0] - detParts[0]) <= 2 && Math.abs(reqParts[1] - detParts[1]) <= 2 && Math.abs(reqParts[2] - detParts[2]) <= 2);
+                        bgPass = meta.bgTopCornersPass && (Math.abs(reqParts[0] - detParts[0]) <= 2 && Math.abs(reqParts[1] - detParts[1]) <= 2 && Math.abs(reqParts[2] - detParts[2]) <= 2);
                     }
-                    checks.push({ label: "Background Color (Top-Left RGB)", val: meta.detectedBgColor || "Unable to read", pass: bgPass, expected: rules.backgroundColor });
+                    checks.push({ label: "Background Color (Top 2 Corners RGB)", val: meta.detectedBgColor || "Unable to read", pass: bgPass, expected: rules.backgroundColor });
                     if (!bgPass) overallPass = false;
                 }
 
+                // 6. Clipping Path Check
                 if (rules.checkPath) {
                     const reqPathsList = rules.targetPathName ? rules.targetPathName.split(',').map(p => p.trim().toLowerCase()) : [];
                     let pathPass = false;
@@ -695,7 +706,7 @@
             }
 
             if (overallPass) totalPassed++;
-            else { totalFailed++; renderFailedCard(file.webkitRelativePath || file.name, checks); }
+            else { totalFailed++; renderFailedCard(file.webkitRelativePath || file.name, checks, file); }
         }
 
         if (totalFailed === 0 && totalPassed > 0) {
@@ -704,10 +715,13 @@
         updateDashboard(files.length, totalPassed, totalFailed);
     }
 
-    function renderFailedCard(fileName, checks) {
+    function renderFailedCard(fileName, checks, fileObj) {
         const reportContainer = document.getElementById('reportContainer');
         const card = document.createElement('div');
         card.className = 'image-card';
+        
+        let thumbCanvasId = 'thumb_' + Math.random().toString(36).substr(2, 9);
+
         let rowsHtml = '';
         checks.forEach(c => {
             const statusClass = c.pass ? 'icon-pass' : 'icon-fail';
@@ -715,8 +729,49 @@
             const expectedText = (!c.pass && c.expected) ? ` <span style="color:var(--accent-red); font-size:12px;">(Expected: ${c.expected})</span>` : '';
             rowsHtml += `<tr><td class="col-name">${c.label}</td><td class="col-val">${c.val}${expectedText} <span class="status-icon ${statusClass}">${icon}</span></td></tr>`;
         });
-        card.innerHTML = `<div class="card-header fail-title"><span>❌ ${fileName}</span><span>FAILED</span></div><table class="criteria-table">${rowsHtml}</table>`;
+
+        card.innerHTML = `
+            <div class="card-header fail-title">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <canvas id="${thumbCanvasId}" class="img-thumb-preview" title="Drag & Drop image into Photoshop to edit!"></canvas>
+                    <span>❌ ${fileName}</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="color:var(--accent-blue); font-size:12px; cursor:pointer;" onclick="alert('💡 Tip: Click and DRAG the thumbnail image on the left directly into Adobe Photoshop to edit instantly!')">💡 Drag Thumbnail to Photoshop</span>
+                    <span style="color:var(--accent-red); font-weight:bold;">FAILED</span>
+                </div>
+            </div>
+            <table class="criteria-table">${rowsHtml}</table>
+        `;
         reportContainer.appendChild(card);
+
+        // Render Canvas Thumbnail for All formats (.tif, .psd, .jpg)
+        setTimeout(() => { generateCanvasThumbnail(fileObj, thumbCanvasId); }, 50);
+    }
+
+    function generateCanvasThumbnail(fileObj, canvasId) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        canvas.width = 44;
+        canvas.height = 44;
+
+        const img = new Image();
+        const url = URL.createObjectURL(fileObj);
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, 44, 44);
+            URL.revokeObjectURL(url);
+        };
+        img.onerror = () => {
+            // Placeholder icon if browser canvas cannot parse native TIF/PSD
+            ctx.fillStyle = "#21262d";
+            ctx.fillRect(0, 0, 44, 44);
+            ctx.fillStyle = "#2f81f7";
+            ctx.font = "10px sans-serif";
+            ctx.fillText("IMG/PSD", 2, 26);
+            URL.revokeObjectURL(url);
+        };
+        img.src = url;
     }
 
     function updateDashboard(total, pass, fail) {
@@ -789,19 +844,31 @@
                     img.onload = () => {
                         try {
                             const canvas = document.createElement('canvas');
-                            canvas.width = img.naturalWidth || width || 100;
-                            canvas.height = img.naturalHeight || height || 100;
+                            const w = img.naturalWidth || width || 100;
+                            const h = img.naturalHeight || height || 100;
+                            canvas.width = w;
+                            canvas.height = h;
                             const ctx = canvas.getContext('2d', { colorSpace: 'srgb', willReadFrequently: true });
                             ctx.drawImage(img, 0, 0);
-                            const pData = ctx.getImageData(0, 0, 1, 1).data;
-                            const detectedBgColor = `${pData[0]}/${pData[1]}/${pData[2]}`;
+                            
+                            // Top 2 Corners Sampling only (Top-Left and Top-Right)
+                            const p1 = ctx.getImageData(0, 0, 1, 1).data;
+                            const p2 = ctx.getImageData(w - 1, 0, 1, 1).data;
+
+                            const detectedBgColor = `${p1[0]}/${p1[1]}/${p1[2]}`;
+                            
+                            // Check if top corners match each other
+                            const bgTopCornersPass = (
+                                Math.abs(p1[0] - p2[0]) <= 3 && Math.abs(p1[1] - p2[1]) <= 3 && Math.abs(p1[2] - p2[2]) <= 3
+                            );
+
                             if (!width) width = img.naturalWidth;
                             if (!height) height = img.naturalHeight;
                             URL.revokeObjectURL(url);
-                            resolve({ width, height, dpi, hasPath, foundPaths, detectedProfile, detectedBgColor, rawText: combinedText });
-                        } catch (err) { URL.revokeObjectURL(url); resolve({ width, height, dpi, hasPath, foundPaths, detectedProfile, detectedBgColor: "255/255/255", rawText: combinedText }); }
+                            resolve({ width, height, dpi, hasPath, foundPaths, detectedProfile, detectedBgColor, bgTopCornersPass, rawText: combinedText });
+                        } catch (err) { URL.revokeObjectURL(url); resolve({ width, height, dpi, hasPath, foundPaths, detectedProfile, detectedBgColor: "255/255/255", bgTopCornersPass: true, rawText: combinedText }); }
                     };
-                    img.onerror = () => { URL.revokeObjectURL(url); resolve({ width, height, dpi, hasPath, foundPaths, detectedProfile, detectedBgColor: "255/255/255", rawText: combinedText }); };
+                    img.onerror = () => { URL.revokeObjectURL(url); resolve({ width, height, dpi, hasPath, foundPaths, detectedProfile, detectedBgColor: "255/255/255", bgTopCornersPass: true, rawText: combinedText }); };
                     img.src = url;
                 } catch (err) { reject(new Error("File parsing failed.")); }
             };
@@ -921,7 +988,7 @@
             ALL_RULES.push(newRow);
         }
 
-        localStorage.setItem('JOB_QC_MASTER_RULES_FINAL_V1', JSON.stringify(ALL_RULES));
+        localStorage.setItem('JOB_QC_MASTER_RULES_V6_STRICT', JSON.stringify(ALL_RULES));
         buildDatabaseFromRules();
         closeEditorModal();
         renderRulesTable();
@@ -931,7 +998,7 @@
     function deleteRule(index) {
         if (confirm("Are you sure you want to delete this rule?")) {
             ALL_RULES.splice(index, 1);
-            localStorage.setItem('JOB_QC_MASTER_RULES_FINAL_V1', JSON.stringify(ALL_RULES));
+            localStorage.setItem('JOB_QC_MASTER_RULES_V6_STRICT', JSON.stringify(ALL_RULES));
             buildDatabaseFromRules();
             renderRulesTable();
         }
