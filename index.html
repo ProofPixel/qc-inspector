@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Job QC Inspector - Master Edition</title>
+    <title>QC Inspector Online</title>
     <style>
         :root {
             --bg-main: #0d1117;
@@ -53,62 +53,31 @@
         .creator-sub { font-size: 11px; color: #e0e0e0; margin-top: 2px; }
         .creator-divider { border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 3px 0; }
 
-        .btn-manage-rules {
-            background: #21262d;
-            color: #fff;
-            border: 1px solid var(--border-color);
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: background 0.2s;
+        .btn-sync-sheet {
+            background: rgba(35, 134, 54, 0.2); color: #3fb950; border: 1px solid rgba(63, 185, 80, 0.4);
+            padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;
+            display: flex; align-items: center; gap: 6px; transition: background 0.2s;
         }
-        .btn-manage-rules:hover { background: #30363d; border-color: #8b949e; }
+        .btn-sync-sheet:hover { background: rgba(35, 134, 54, 0.4); }
 
         .btn-reset {
-            background: #21262d;
-            color: #f85149;
-            border: 1px solid rgba(218, 54, 51, 0.4);
-            padding: 8px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-            height: 38px;
-            margin-top: auto;
+            background: #21262d; color: #f85149; border: 1px solid rgba(218, 54, 51, 0.4);
+            padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;
+            display: flex; align-items: center; gap: 6px; transition: all 0.2s; height: 38px; margin-top: auto;
         }
         .btn-reset:hover { background: rgba(218, 54, 51, 0.2); border-color: #f85149; }
 
         .controls-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            align-items: flex-end;
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            padding: 20px; border-radius: 12px; margin-bottom: 20px;
+            display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;
         }
         .input-group { display: flex; flex-direction: column; position: relative; flex: 1; min-width: 180px; }
         label { font-weight: 600; display: block; margin-bottom: 6px; font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         
         select, input[type="text"] {
-            padding: 10px 14px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            font-size: 14px;
-            background-color: #0d1117;
-            color: #fff;
-            outline: none;
+            padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border-color);
+            font-size: 14px; background-color: #0d1117; color: #fff; outline: none;
         }
         select:focus, input[type="text"]:focus { border-color: var(--accent-blue); }
 
@@ -130,15 +99,9 @@
         .dropdown-item:hover, .dropdown-item.selected { background-color: var(--accent-blue); color: #fff; font-weight: bold; }
 
         .specs-preview-bar {
-            background: #111418;
-            border: 1px solid var(--border-color);
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
+            background: #111418; border: 1px solid var(--border-color);
+            padding: 12px 20px; border-radius: 8px; margin-bottom: 20px;
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
         }
         .specs-label { font-size: 12px; color: var(--text-muted); font-weight: bold; margin-right: 5px; }
         .spec-chip {
@@ -187,29 +150,15 @@
             align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(4px);
         }
         .modal-container {
-            background: var(--bg-card); border: 1px solid var(--border-color); width: 100%; max-width: 1000px;
-            max-height: 90vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden;
+            background: var(--bg-card); border: 1px solid var(--border-color); width: 100%; max-width: 600px;
+            border-radius: 12px; display: flex; flex-direction: column; overflow: hidden;
             box-shadow: 0 16px 48px rgba(0,0,0,0.9);
         }
         .modal-header { padding: 18px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: #1f242d; }
         .modal-header h3 { margin: 0; font-size: 16px; color: #fff; display: flex; align-items: center; gap: 8px; }
         .btn-close-modal { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; }
         .btn-close-modal:hover { color: #fff; }
-        
         .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
-        .rules-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .rules-table th { background: #21262d; color: var(--text-muted); padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
-        .rules-table td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); color: #c9d1d9; }
-        .rules-table tr:hover { background: rgba(255,255,255,0.02); }
-
-        .btn-action { background: #21262d; border: 1px solid var(--border-color); color: #fff; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
-        .btn-action:hover { background: #30363d; }
-        .btn-action.delete { color: #f85149; border-color: rgba(218,54,51,0.4); }
-        .btn-action.delete:hover { background: rgba(218,54,51,0.2); }
-
-        .form-group-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 15px; }
-        .form-group { display: flex; flex-direction: column; gap: 5px; }
-        .form-group input, .form-group select { padding: 8px 12px; background: #0d1117; border: 1px solid var(--border-color); border-radius: 6px; color: #fff; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -217,8 +166,8 @@
 <div class="container">
     <div class="top-banner">
         <div class="banner-title-area">
-            <h1>🎯 Job QC Inspector <span class="badge-active" id="activeRulesBadge">53 Rules Loaded</span></h1>
-            <p>Automated client image specification & quality compliance validator.</p>
+            <h1>🌐 QC Inspector Online <span class="badge-active" id="activeRulesBadge">Loading Online Rules...</span></h1>
+            <p>Direct Live Google Sheets QC Rules Engine (No Offline Local Overrides).</p>
         </div>
         <div style="display: flex; gap: 15px; align-items: center;">
             <div class="creator-card">
@@ -226,7 +175,7 @@
                 <div class="creator-divider"></div>
                 <div class="creator-sub">Cutting Edger | Professional Photoshop Automation</div>
             </div>
-            <button class="btn-manage-rules" onclick="requestAdminAccess()">⚙️ Manage QC Rules</button>
+            <button class="btn-sync-sheet" onclick="openSheetSyncModal()">⚙️ Set Google Sheet URL</button>
         </div>
     </div>
 
@@ -279,172 +228,34 @@
     </div>
 </div>
 
-<!-- Manage QC Rules Modal -->
-<div class="modal-overlay" id="rulesModal">
+<!-- Google Sheet Sync Modal -->
+<div class="modal-overlay" id="sheetSyncModal">
     <div class="modal-container">
         <div class="modal-header">
-            <h3>🔒 Password Protected QC Rules Management</h3>
-            <button class="btn-close-modal" onclick="closeRulesModal()">×</button>
+            <h3>📊 Live Google Sheet URL Settings</h3>
+            <button class="btn-close-modal" onclick="closeSheetSyncModal()">×</button>
         </div>
         <div class="modal-body">
-            <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
-                <input type="text" id="ruleFilterInput" placeholder="Filter rules by Job ID or Category..." oninput="renderRulesTable()" style="width: 100%; max-width: 350px;">
-                <button onclick="openRuleEditor()" style="background: var(--accent-green); color:#fff; border:none; padding: 8px 16px; border-radius: 6px; cursor:pointer; font-weight:bold; font-size:13px;">+ Add New Rule</button>
+            <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-top:0;">
+                Google Sheet theke live rules load korar jonno sheet-ti <b>File > Share > Publish to web</b> kore <b>Comma-separated values (.csv)</b> link ti ekhane set koro. Ekhane ja URL thakbe shobay sheti live use korbe.
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px;">
+                <label style="font-size: 12px; color: var(--text-muted); font-weight: bold;">Google Sheet Published CSV URL *</label>
+                <input type="text" id="sheetCsvUrl" placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv">
             </div>
-            <div style="overflow-x: auto;">
-                <table class="rules-table">
-                    <thead>
-                        <tr>
-                            <th>Job ID</th>
-                            <th>Category</th>
-                            <th>Dimensions</th>
-                            <th>DPI</th>
-                            <th>Clipping Path</th>
-                            <th>Profile</th>
-                            <th>BG RGB</th>
-                            <th style="text-align: center;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="rulesTableBody">
-                        <tr><td colspan="8" style="text-align: center; color: var(--text-muted);">Loading Rules...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Add / Edit Rule Modal -->
-<div class="modal-overlay" id="editorModal">
-    <div class="modal-container" style="max-width: 550px; max-height: auto;">
-        <div class="modal-header">
-            <h3 id="editorTitle">Add / Edit QC Rule</h3>
-            <button class="btn-close-modal" onclick="closeEditorModal()">×</button>
-        </div>
-        <div class="modal-body">
-            <input type="hidden" id="editIndex" value="-1">
-            <div class="form-group-grid">
-                <div class="form-group">
-                    <label>Job ID *</label>
-                    <input type="text" id="fJobId" placeholder="e.g. 202060">
-                </div>
-                <div class="form-group">
-                    <label>Category / Preset *</label>
-                    <input type="text" id="fPreset" placeholder="e.g. Tabletop">
-                </div>
-            </div>
-            <div class="form-group-grid">
-                <div class="form-group">
-                    <label>Extensions (comma separated)</label>
-                    <input type="text" id="fExt" value=".jpg,.jpeg,.tif,.psd">
-                </div>
-                <div class="form-group">
-                    <label>DPI / Resolution</label>
-                    <input type="text" id="fDpi" value="300">
-                </div>
-            </div>
-            <div class="form-group-grid">
-                <div class="form-group">
-                    <label>Width (or >=5000)</label>
-                    <input type="text" id="fWidth" placeholder="e.g. 2550 or >=5000">
-                </div>
-                <div class="form-group">
-                    <label>Height</label>
-                    <input type="text" id="fHeight" placeholder="e.g. 3584">
-                </div>
-            </div>
-            <div class="form-group-grid">
-                <div class="form-group">
-                    <label>Check Path? (TRUE/FALSE)</label>
-                    <select id="fCheckPath">
-                        <option value="TRUE">TRUE</option>
-                        <option value="FALSE">FALSE</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Target Path Name</label>
-                    <input type="text" id="fPathName" placeholder="e.g. Path 1">
-                </div>
-            </div>
-            <div class="form-group-grid">
-                <div class="form-group">
-                    <label>Color Profile</label>
-                    <input type="text" id="fProfile" placeholder="e.g. ECI-RGB or sRGB">
-                </div>
-                <div class="form-group">
-                    <label>Background RGB</label>
-                    <input type="text" id="fBg" placeholder="e.g. 255/255/255">
-                </div>
-            </div>
-            <div style="margin-top: 20px; text-align: right;">
-                <button onclick="saveRuleToStorage()" style="background: var(--accent-blue); color:#fff; border:none; padding: 10px 20px; border-radius: 6px; cursor:pointer; font-weight:bold;">Save Rule</button>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="saveAndFetchLiveSheet()" style="background: var(--accent-green); color:#fff; border:none; padding: 10px 18px; border-radius: 6px; cursor:pointer; font-weight:bold; font-size:13px;">📥 Save & Load Live Rules Now</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    const ADMIN_PASSWORD = "sajib123";
-
-    const DEFAULT_MASTER_RULES = [
-        ["Clipping", "Clipping Aslist", ".jpg,.jpeg,.tif,.psd", "", "", "300", "TRUE", "Path 1", "", ""],
-        ["Clipping", "Ecom Masking", ".jpg,.jpeg,.tif,.psd", "", "", "300", "TRUE", "Path 1", "", ""],
-        ["335780", "Tabletop", ".tif", ">=5000", ">=5000", "300", "FALSE", "", "ECI-RGB", "255/255/255"],
-        ["335780", "Tabletop - Overview", ".tif", ">=5000", ">=5000", "300", "FALSE", "", "ECI-RGB", "255/255/255"],
-        ["335780", "Montage - Verpackung", ".tif", "2560", "2560", "96", "FALSE", "", "sRGB", "255/255/255"],
-        ["335780", "Montage -TecDoc", ".jpg", "600", "400", "96", "FALSE", "", "sRGB", "255/255/255"],
-        ["335780", "360 View", ".tif", "", "", "300", "FALSE", "", "ECI-RGB", "255/255/255"],
-        ["202060", "Hanger_RECOLOR", ".jpg", "2550", "3584", "300", "TRUE", "Path 1", "ECI-RGB", "242/242/242"],
-        ["202060", "On Model/ON MODEL LINGERIE", ".jpg", "2560/2336", "3584/1144", "300", "TRUE", "Path 1", "ECI-RGB", ""],
-        ["202060", "Hanger", ".jpg", "2560", "3584", "300", "TRUE", "Path 1", "ECI-RGB", "242/242/242"],
-        ["202060", "Flat", ".jpg", "2550", "3584", "300", "TRUE", "Path 1", "ECI-RGB", "242/242/242"],
-        ["202061", "AI RP MANNEQUIN_TABLETOP", ".jpg", "", "", "300", "FALSE", "", "sRGB", "255/255/255"],
-        ["202060", "Tabletop", ".jpg", "2550", "3584", "300", "TRUE", "Path 1", "ECI-RGB", "242/242/242"],
-        ["208041", "ON MODEL_LOOKS", ".tif", "4689/6720", "6720/4689", "300", "FALSE", "Path 1", "Adobe RGB", ""],
-        ["208041", "On Model", ".jpg", "2500", "3582", "300", "TRUE", "Path 1", "Adobe RGB", "227/226/224"],
-        ["301271", "MANNEQUIN_FLATS_TABLETOP", "", "4043", "6065", "300", "TRUE", "Path 1", "sRGB", ""],
-        ["301272", "On Model Ecom", ".jpg", "3894", "5563", "300", "FALSE", "", "sRGB", ""],
-        ["301271", "On Model LookBook", "", "", "", "300", "FALSE", "", "", ""],
-        ["331777", "Mannequin-LSCN", ".jpg", "1801", "2600", "300", "TRUE", "Path 1", "sRGB", "255/255/255"],
-        ["331777", "ON MODEL-LSCN", ".jpg", "1801", "2600", "300", "TRUE", "Path 1,Path 2,Path 3", "sRGB", ""],
-        ["331777", "ON MODEL-Lascana", ".jpg", "1801", "2600", "300", "TRUE", "Path 1", "sRGB", "241/241/241"],
-        ["331777", "Mannequin-Lascana", ".tif", "2663", "3844", "300", "TRUE", "Path 1", "ECI-RGB", "255/255/255"],
-        ["331777", "Ai_RP_MAnnequin", ".jpg", "", "", "300", "FALSE", "", "sRGB", "255/255/255"],
-        ["301981", "_Mannequin", ".tif", "1040", "1500", "300", "FALSE", "", "sRGB", ""],
-        ["301283", "On Model", ".tif", "1524", "2200", "300", "TRUE", "Path 1", "ECI-RGB", "237/237/237"],
-        ["301283", "Flat", ".tif", "3810", "5500", "300", "TRUE", "Path 1", "ECI-RGB", "255/255/255"],
-        ["301283", "Mannequin", ".tif", "3810", "5500", "300", "TRUE", "Path 1", "ECI-RGB", "255/255/255"],
-        ["301283", "Table Top", ".tif", "3810", "5500", "300", "TRUE", "Path 1", "ECI-RGB", "255/255/255"],
-        ["301283", "Table Top_300", ".tif", "3810", "5500", "300", "TRUE", "Path 1", "ECI-RGB", "255/255/255"],
-        ["301283", "Table Top_150", ".tif", "3810", "5500", "300", "TRUE", "Path 1", "ECI-RGB", "255/255/255"],
-        ["301283", "Shoes", ".tif", "1524", "2200", "300", "TRUE", "Path 1", "ECI-RGB", "255/255/255"],
-        ["342753", "Mannequin", ".tif", ">=2000", ">=2000", "300", "TRUE", "Path 1", "ECI-RGB", "255/255/255"],
-        ["302907", "Tabletop", ".tif", "1550", "2200", "300", "TRUE", "Path 1", "sRGB", "255/255/255"],
-        ["329685", "Tabletop", ".tif", "3543", "2362", "300", "TRUE", "Path 1", "ECI-RGB", "255/255/255"],
-        ["337618", "Flat", ".jpg", "3200", "4000", "300", "FALSE", "", "sRGB", "241/241/241"],
-        ["337618", "On Model", ".tif", "3200", "4000/4480", "300", "TRUE", "Path 1", "", "241/241/241"],
-        ["302418", "Bust", ".jpg", "3000", "4020", "300", "TRUE", "", "Adobe RGB", "243/243/246"],
-        ["302418", "Model", ".jpg", "3000", "4020", "300", "TRUE", "", "Adobe RGB", ""],
-        ["302418", "Recolor", ".jpg", "3000", "4020", "300", "TRUE", "", "Adobe RGB", ""],
-        ["301093", "Tabletop", ".tif", "", "", "300", "TRUE", "Path 1", "sRGB", "255/255/255"],
-        ["301093", "Flats", "", "", "", "300", "FALSE", "", "", ""],
-        ["330868", "Mannequin", ".tif", "3648/3139", "5472/4708", "300", "TRUE", "Path 1", "ECI-RGB", "255/255/255"],
-        ["330868", "360 Degree BUST", "", "", "", "300", "TRUE", "Path 1", "", ""],
-        ["330868", "Flats", ".tif", ">=3000", ">=3000", "300", "TRUE", "Path 1", "ECI-RGB", "255/255/255"],
-        ["334368", "On Model recolor", ".jpg", "3500", "3500", "300", "FALSE", "", "sRGB", "255/255/255"],
-        ["334368", "Tabletop", ".jpg", "3500", "3500", "150", "FALSE", "", "sRGB", "255/255/255"],
-        ["334368", "Tabletop recolor", ".jpg", "2500", "3582", "300", "FALSE", "", "sRGB", "255/255/255"],
-        ["334368", "Mannequin", ".jpg", "3500", "3500", "300", "FALSE", "", "sRGB", "255/255/255"],
-        ["334368", "Mannequin recolor", ".jpg", "3500", "3500", "150", "FALSE", "", "sRGB", "255/255/255"],
-        ["1021127_1021018", "Tabletop", ".tif", "2560", "2560", "300", "TRUE", "Path 1", "sRGB", "255/255/255"],
-        ["320907", "Mannequin", ".tif", "", "", "300", "FALSE", "", "Adobe RGB", ""],
-        ["320907", "Flats", ".tif", "", "", "300", "FALSE", "", "Adobe RGB", ""],
-        ["320907", "Tabletop", ".tif", "", "", "300", "FALSE", "", "Adobe RGB", ""]
-    ];
-
     let JOB_DATABASE = {};
     let ALL_RULES = [];
     let SELECTED_JOB_ID = "";
+
+    const SHEET_URL_KEY = 'QC_ONLINE_LIVE_SHEET_URL';
 
     const jobSearchInput = document.getElementById('jobSearchInput');
     const jobDropdownList = document.getElementById('jobDropdownList');
@@ -454,49 +265,112 @@
     const activeRulesBadge = document.getElementById('activeRulesBadge');
     const specsPreviewBar = document.getElementById('specsPreviewBar');
 
-    function loadRulesFromStorage() {
-        const STORAGE_KEY = 'JOB_QC_MASTER_RULES_V13_FAST';
-        let stored = localStorage.getItem(STORAGE_KEY);
-        if (!stored) {
-            ALL_RULES = DEFAULT_MASTER_RULES;
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(ALL_RULES));
-        } else {
-            try { 
-                ALL_RULES = JSON.parse(stored); 
-                if (!ALL_RULES || ALL_RULES.length === 0) {
-                    ALL_RULES = DEFAULT_MASTER_RULES;
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(ALL_RULES));
+    async function initOnlineRules() {
+        let savedUrl = localStorage.getItem(SHEET_URL_KEY);
+        if (!savedUrl) {
+            openSheetSyncModal();
+            activeRulesBadge.textContent = "Google Sheet URL Required";
+            return;
+        }
+        await fetchLiveGoogleSheet(savedUrl);
+    }
+
+    function openSheetSyncModal() {
+        document.getElementById('sheetSyncModal').style.display = 'flex';
+        document.getElementById('sheetCsvUrl').value = localStorage.getItem(SHEET_URL_KEY) || '';
+    }
+    function closeSheetSyncModal() { document.getElementById('sheetSyncModal').style.display = 'none'; }
+
+    async function saveAndFetchLiveSheet() {
+        let url = document.getElementById('sheetCsvUrl').value.trim();
+        if (!url) {
+            alert("Please enter a valid Google Sheet CSV URL!");
+            return;
+        }
+        localStorage.setItem(SHEET_URL_KEY, url);
+        let success = await fetchLiveGoogleSheet(url);
+        if (success) {
+            closeSheetSyncModal();
+            alert("🎉 Live rules fetched successfully from Google Sheet!");
+        }
+    }
+
+    async function fetchLiveGoogleSheet(url) {
+        try {
+            activeRulesBadge.textContent = "Syncing Online Sheet...";
+            let response = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
+            if (!response.ok) throw new Error("Could not reach Google Sheet.");
+            let csvText = await response.text();
+            
+            let rows = parseCSV(csvText);
+            if (rows.length === 0) {
+                alert("❌ No valid rules found in the Google Sheet.");
+                activeRulesBadge.textContent = "0 Rules Active";
+                return false;
+            }
+
+            ALL_RULES = rows;
+            buildDatabaseFromRules();
+            return true;
+        } catch (err) {
+            alert("❌ Failed to fetch Google Sheet rules.\nCheck Internet connection or URL.\nError: " + err.message);
+            activeRulesBadge.textContent = "Sync Failed ❌";
+            return false;
+        }
+    }
+
+    function parseCSV(text) {
+        let lines = text.split('\n');
+        let result = [];
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i].trim();
+            if (!line) continue;
+            let row = [];
+            let inQuotes = false;
+            let val = '';
+            for (let c = 0; c < line.length; c++) {
+                let char = line[c];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    row.push(val.trim());
+                    val = '';
+                } else {
+                    val += char;
                 }
-            } catch(e) { 
-                ALL_RULES = DEFAULT_MASTER_RULES; 
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(ALL_RULES));
+            }
+            row.push(val.trim());
+            if (i === 0 && (row[0].toLowerCase().includes('job') || row[0].toLowerCase().includes('id'))) continue;
+            if (row.length >= 2 && row[0] !== '') {
+                result.push(row);
             }
         }
-        buildDatabaseFromRules();
+        return result;
     }
 
     function buildDatabaseFromRules() {
         let newDb = {};
         ALL_RULES.forEach(row => {
-            const jobId = row[0];
-            const presetName = row[1];
+            if (!row || row.length < 2) return;
+            const jobId = String(row[0] || '').trim();
+            const presetName = String(row[1] || '').trim();
             if (!jobId || !presetName) return;
 
             const exts = (row[2] || '').split(',').map(e => e.trim().toLowerCase().startsWith('.') ? e.trim().toLowerCase() : '.' + e.trim().toLowerCase()).filter(e => e !== '.');
-            const rawWidthStr = row[3] || '';
-            const rawHeightStr = row[4] || '';
+            const rawWidthStr = String(row[3] || '').trim();
+            const rawHeightStr = String(row[4] || '').trim();
             const dpi = parseInt(row[5]) || 300;
-            const checkPath = ((row[6] || '').toUpperCase() === 'TRUE');
-            const targetPathName = row[7] ? row[7].trim() : '';
-            const colorProfile = row[8] ? row[8].trim() : '';
-            const backgroundColor = row[9] ? row[9].trim() : '';
+            const checkPath = (String(row[6] || '').toUpperCase() === 'TRUE');
+            const targetPathName = String(row[7] || '').trim();
+            const colorProfile = String(row[8] || '').trim();
+            const backgroundColor = String(row[9] || '').trim();
 
             if (!newDb[jobId]) newDb[jobId] = {};
             newDb[jobId][presetName] = { ext: exts, rawWidthStr, rawHeightStr, dpi, checkPath, targetPathName, colorProfile, backgroundColor };
         });
 
         JOB_DATABASE = newDb;
-        activeRulesBadge.textContent = `${ALL_RULES.length} Rules Active`;
+        activeRulesBadge.textContent = `🟢 ${ALL_RULES.length} Online Rules Active`;
         initJobIds(jobSearchInput.value.replace("JOB ID:", "").trim());
     }
 
@@ -875,128 +749,7 @@
         return view.getUint16(entryOffset + 8, isLE);
     }
 
-    function requestAdminAccess() {
-        let pass = prompt("🔐 Enter Admin Password to Manage QC Rules:");
-        if (pass === ADMIN_PASSWORD) {
-            document.getElementById('rulesModal').style.display = 'flex';
-            renderRulesTable();
-        } else if (pass !== null) {
-            alert("❌ Incorrect Password! Access Denied.");
-        }
-    }
-
-    function closeRulesModal() { document.getElementById('rulesModal').style.display = 'none'; }
-
-    function renderRulesTable() {
-        const tbody = document.getElementById('rulesTableBody');
-        const filterVal = document.getElementById('ruleFilterInput').value.toLowerCase();
-        tbody.innerHTML = "";
-
-        const filtered = ALL_RULES.map((r, idx) => ({r, idx})).filter(({r}) => 
-            (r[0] && r[0].toLowerCase().includes(filterVal)) || 
-            (r[1] && r[1].toLowerCase().includes(filterVal))
-        );
-
-        if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">No rules found matching filter.</td></tr>`;
-            return;
-        }
-
-        filtered.forEach(({r, idx}) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><b>${r[0] || ''}</b></td>
-                <td><span style="background:#21262d; padding:3px 8px; border-radius:4px; border:1px solid var(--border-color);">${r[1] || ''}</span></td>
-                <td><code>${r[3] || 'Any'} × ${r[4] || 'Any'}</code></td>
-                <td><code>${r[5] || '300'} DPI</code></td>
-                <td>${(r[6] && r[6].toUpperCase() === 'TRUE') ? '✂️ ' + (r[7] || 'Path Required') : 'No Path'}</td>
-                <td>🎨 ${r[8] || 'sRGB'}</td>
-                <td>🖌️ ${r[9] || '—'}</td>
-                <td style="text-align: center; display:flex; gap:6px; justify-content:center;">
-                    <button class="btn-action" onclick="openRuleEditor(${idx})">Edit</button>
-                    <button class="btn-action delete" onclick="deleteRule(${idx})">Delete</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function openRuleEditor(index = -1) {
-        document.getElementById('editorModal').style.display = 'flex';
-        document.getElementById('editIndex').value = index;
-        if (index >= 0) {
-            let r = ALL_RULES[index];
-            document.getElementById('editorTitle').textContent = "Edit QC Rule";
-            document.getElementById('fJobId').value = r[0] || '';
-            document.getElementById('fPreset').value = r[1] || '';
-            document.getElementById('fExt').value = r[2] || '.jpg,.jpeg,.tif,.psd';
-            document.getElementById('fWidth').value = r[3] || '';
-            document.getElementById('fHeight').value = r[4] || '';
-            document.getElementById('fDpi').value = r[5] || '300';
-            document.getElementById('fCheckPath').value = r[6] || 'FALSE';
-            document.getElementById('fPathName').value = r[7] || '';
-            document.getElementById('fProfile').value = r[8] || '';
-            document.getElementById('fBg').value = r[9] || '';
-        } else {
-            document.getElementById('editorTitle').textContent = "Add New QC Rule";
-            document.getElementById('fJobId').value = '';
-            document.getElementById('fPreset').value = '';
-            document.getElementById('fExt').value = '.jpg,.jpeg,.tif,.psd';
-            document.getElementById('fWidth').value = '';
-            document.getElementById('fHeight').value = '';
-            document.getElementById('fDpi').value = '300';
-            document.getElementById('fCheckPath').value = 'FALSE';
-            document.getElementById('fPathName').value = '';
-            document.getElementById('fProfile').value = 'sRGB';
-            document.getElementById('fBg').value = '';
-        }
-    }
-
-    function closeEditorModal() { document.getElementById('editorModal').style.display = 'none'; }
-
-    function saveRuleToStorage() {
-        let idx = parseInt(document.getElementById('editIndex').value);
-        let newRow = [
-            document.getElementById('fJobId').value.trim(),
-            document.getElementById('fPreset').value.trim(),
-            document.getElementById('fExt').value.trim(),
-            document.getElementById('fWidth').value.trim(),
-            document.getElementById('fHeight').value.trim(),
-            document.getElementById('fDpi').value.trim(),
-            document.getElementById('fCheckPath').value.trim(),
-            document.getElementById('fPathName').value.trim(),
-            document.getElementById('fProfile').value.trim(),
-            document.getElementById('fBg').value.trim()
-        ];
-
-        if (!newRow[0] || !newRow[1]) {
-            alert("Job ID and Category / Preset are required!");
-            return;
-        }
-
-        if (idx >= 0) {
-            ALL_RULES[idx] = newRow;
-        } else {
-            ALL_RULES.push(newRow);
-        }
-
-        localStorage.setItem('JOB_QC_MASTER_RULES_V13_FAST', JSON.stringify(ALL_RULES));
-        buildDatabaseFromRules();
-        closeEditorModal();
-        renderRulesTable();
-        alert("🎉 Rule successfully saved to standalone storage!");
-    }
-
-    function deleteRule(index) {
-        if (confirm("Are you sure you want to delete this rule?")) {
-            ALL_RULES.splice(index, 1);
-            localStorage.setItem('JOB_QC_MASTER_RULES_V13_FAST', JSON.stringify(ALL_RULES));
-            buildDatabaseFromRules();
-            renderRulesTable();
-        }
-    }
-
-    loadRulesFromStorage();
+    initOnlineRules();
 </script>
 
 </body>
