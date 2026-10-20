@@ -412,7 +412,7 @@ canvas.thumb{cursor:zoom-in}
     <div class="brand">
       <div class="logo"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></div>
       <div>
-        <h1><span class="grad">Job QC Inspector</span> <span class="pill">v5.1</span></h1>
+        <h1><span class="grad">Job QC Inspector</span> <span class="pill">v5.2</span></h1>
         <p>Client image specification &amp; quality compliance validator</p>
       </div>
     </div>
@@ -620,11 +620,17 @@ canvas.thumb{cursor:zoom-in}
  <section class="card pcard" style="margin-top:16px"><h3>✨ Retouch &amp; Smooth Studio <span class="tag mut">local · no upload</span></h3><p class="mut">Quick global softening/sharpening and tone adjustment. This is a manual pixel filter, not AI or face-aware retouching; use a copy and review details at 100%.</p><div class="fg"><div><label>Choose image (JPG, PNG, WebP)</label><input id="retouchFile" type="file" accept="image/jpeg,image/png,image/webp" class="inp" style="display:block"></div><div><label>Preview</label><span id="retouchInfo" class="mut">No image selected</span></div></div><div class="sgrid" style="gap:10px"><label class="card pcard">Smooth / soften <input id="retouchSmooth" type="range" min="0" max="100" value="0" style="width:100%"><small class="mut" id="retouchSmoothValue">0%</small></label><label class="card pcard">Sharpen <input id="retouchSharp" type="range" min="0" max="100" value="0" style="width:100%"><small class="mut" id="retouchSharpValue">0%</small></label><label class="card pcard">Brightness <input id="retouchBright" type="range" min="-40" max="40" value="0" style="width:100%"></label><label class="card pcard">Contrast <input id="retouchContrast" type="range" min="-40" max="40" value="0" style="width:100%"></label></div><div class="rbar"><button class="btn primary" id="retouchApply" disabled>Update preview</button><button class="btn" id="retouchDownload" disabled>⬇ Download PNG</button><button class="btn" id="retouchBackup" disabled>⬇ Save untouched original copy</button><button class="btn" id="retouchReset" disabled>Restore original preview</button><span id="retouchStatus" class="mut"></span></div><p class="mut" style="margin:8px 0 4px">Live preview: move any slider to see its effect. Press and hold on the image to compare the original; release to return to the edited preview.</p><canvas id="retouchCanvas" aria-label="Retouch preview. Press and hold to see original" style="max-width:100%;height:auto;border-radius:12px;background:repeating-conic-gradient(#aaa 0 25%,#eee 0 50%) 50%/16px 16px;touch-action:none;cursor:ew-resize"></canvas></section>
 </div>
 
-<!-- ================= AI TOOLS ================= -->
+<!-- ================= AI CHAT ================= -->
 <div class="page" id="pg-aitools">
- <div class="ph"><div><h2>🤖 AI Tools</h2><p class="mut">Chat with free-tier models using your own provider key. Keys are saved only in this browser.</p></div><span class="tag warn">Free tier has limits</span></div>
- <div class="card pcard" style="margin-bottom:16px"><div class="warnbox">An internet connection alone does not authorize access to private AI providers. This app has no embedded/shared secret key. For privacy and abuse prevention, paste your own OpenRouter key; choose Auto/free for models offered at no token cost, or select ChatGPT/Grok/Claude/Gemini routes (these may require paid credits). Free routes can be rate-limited or temporarily unavailable. The key is stored only in this browser; avoid entering sensitive customer data. Do not paste sensitive customer/product data unless permitted.</div><div class="fg"><div><label>Provider API key</label><input class="inp" id="aiKey" type="password" autocomplete="off" placeholder="Paste your own key"></div><div><label>Free model route</label><select class="inp" id="aiModel"><option value="openrouter/free">Auto · any currently available free model</option><option value="google/gemma-4-31b-it:free">Gemma · free route (if available)</option><option value="nvidia/nemotron-3-super-120b-a12b:free">NVIDIA Nemotron · free route (if available)</option><option value="openai/gpt-4o-mini">OpenAI / ChatGPT family · may be paid</option><option value="x-ai/grok-3-mini">xAI / Grok family · may be paid</option><option value="anthropic/claude-3.5-haiku">Anthropic / Claude family · may be paid</option><option value="google/gemini-2.0-flash-exp:free">Google / Gemini family · free availability may change</option></select><input class="inp" id="aiCustomModel" placeholder="Optional: custom model ID" style="margin-top:8px"></div></div><button class="btn sm" id="aiSave">Save key on this device</button> <a class="btn sm" href="https://openrouter.ai/keys" target="_blank" rel="noopener">Get a key</a></div>
- <div class="card pcard"><h3>💬 AI chat</h3><div id="aiChatLog" style="height:330px;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--bg2);margin:10px 0"><p class="mut">Ask for help with QC workflows, image specifications, or general questions.</p></div><textarea class="inp" id="aiPrompt" rows="3" placeholder="Write a message…"></textarea><div class="rbar" style="margin-top:10px"><button class="btn primary" id="aiSend">Send</button><button class="btn" id="aiClear">Clear chat</button><span id="aiStatus" class="mut"></span></div></div>
+ <div class="ph"><div><h2>🤖 AI Tools · Chat</h2><p class="mut">Use Google AI Studio directly, or select OpenRouter. Your provider API key stays in this browser profile.</p></div></div>
+ <div class="card pcard">
+  <div class="warnbox">Choose <b>Google AI Studio</b> to use a direct Gemini API key, or <b>OpenRouter</b> for an OpenRouter key. The Remember option stores the selected provider's key only in this browser profile—not in the HTML. Anyone using that same profile may access it. Free model quotas and access depend on the provider/account.</div>
+  <div class="fg" style="margin-top:12px"><div><label>AI provider</label><select id="chatProvider" class="inp"><option value="google">Google AI Studio · direct Gemini API</option><option value="openrouter">OpenRouter · multi-model API</option></select><label id="chatKeyLabel" style="margin-top:10px">Google AI Studio API key</label><input id="chatApiKey" class="inp" type="password" autocomplete="off" placeholder="Paste Google AI Studio key (AIza…)"><div class="opts" style="margin:8px 0 2px"><label><input id="rememberChatKey" type="checkbox"> Remember this key on this PC/browser</label></div><button class="btn sm primary" id="chatKeyCheck" style="margin-top:8px">✓ Confirm &amp; use API key</button><span id="chatKeyStatus" class="mut" style="margin-left:8px">Not verified</span></div><div><label>Model</label><select id="chatModel" class="inp"><option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite · Free tier</option><option value="gemini-3-flash-preview">Gemini 3 Flash Preview · Free tier</option></select><p class="mut" id="chatProviderNote">Google API key only. Choose a model marked Free to avoid paid-tier models; limits can apply.</p></div></div>
+  <div class="rbar"><a class="btn sm" id="chatGetKey" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Get Google AI Studio key</a><button class="btn sm" id="chatClear">New chat</button><button class="btn sm" id="chatCopy">Copy last answer</button><button class="btn sm" id="chatExport">Export chat</button><span class="mut" id="chatModelStatus">Select a model and enter your key to chat.</span></div>
+  <div class="opts" style="margin:8px 0 12px"><span class="mut">Quick prompts:</span><button class="btn sm chat-prompt" data-prompt="Explain this QC issue in simple steps: ">Explain QC issue</button><button class="btn sm chat-prompt" data-prompt="Translate this into clear professional Bangla: ">Translate to Bangla</button><button class="btn sm chat-prompt" data-prompt="Draft a short polite client update about this image production task: ">Draft client update</button><button class="btn sm chat-prompt" data-prompt="Help me create a safe filename pattern for these requirements: ">Filename pattern</button></div>
+  <div id="chatMessages" aria-live="polite" style="height:52vh;min-height:300px;max-height:650px;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:12px;margin:12px 0;background:var(--bg2,#0b1220)"></div>
+  <div class="fg" style="align-items:end"><div><label>Your message <small class="mut">Enter sends · Shift+Enter adds a line</small></label><textarea id="chatInput" class="inp" rows="3" placeholder="Write a message…" style="resize:vertical"></textarea></div><div style="flex:0 0 auto"><button class="btn primary" id="chatSend">Send</button></div></div>
+ </div>
 </div>
 
 <!-- ================= DUPLICATE IMAGE FINDER ================= -->
@@ -697,7 +703,7 @@ canvas.thumb{cursor:zoom-in}
     <div class="fg"><div><label>Extensions</label><input class="inp" id="fExt" value=".jpg,.tif,.psd"></div><div><label>DPI</label><input class="inp" id="fDpi" value="300"></div></div>
     <div class="fg"><div><label>Width (or &gt;=5000, or 2560/2336)</label><input class="inp" id="fW"></div><div><label>Height</label><input class="inp" id="fH"></div></div>
     <div class="fg"><div><label>Check path?</label><select class="inp" id="fChk"><option>TRUE</option><option>FALSE</option></select></div><div><label>Target path name</label><input class="inp" id="fPath" placeholder="Path 1"></div></div>
-    <div class="fg"><div><label>Color profile</label><input class="inp" id="fProf" placeholder="ECI-RGB / sRGB / Adobe RGB"></div><div><label>Background RGB</label><input class="inp" id="fBg" placeholder="255/255/255"></div></div>
+    <div class="fg"><div><label>Color profile</label><input class="inp" id="fProf" placeholder="ECI-RGB / sRGB / Adobe RGB"></div><div><label>Background RGB or TRANSPARENT</label><input class="inp" id="fBg" placeholder="255/255/255 or TRANSPARENT"></div></div>
     <div style="text-align:right"><button class="btn primary" id="saveRule">Save rule</button></div>
   </div>
 </div></div>
@@ -2214,7 +2220,45 @@ X.B(E,Y);return E}return J}())
       bg = ch.join('/');
     } catch (e) { bgNote = e.message; }
 
-    return { width, height, dpi: Math.round(dpi), profile, paths: res.paths, clipName: res.clipName, bg, bgNote, format: 'tif' };
+    // Verify alpha at the four TIFF corners for supported strip-based RGB TIFFs.
+    let transparency = null;
+    try {
+      const extras = await getNums(tags[338]);
+      const alphaIndex = spp - 1;
+      if (!extras.some(v => v === 1 || v === 2) || spp < 4) {
+        transparency = { supported: false, transparent: false, reason: 'TIFF has no flattened alpha channel to sample. Photoshop may show transparency from its layer data; this checker cannot confirm that from the TIFF composite.' };
+      } else if (planar !== 1 || photometric !== 2 || (bps !== 8 && bps !== 16) || predictor !== 1 || tags[324]) {
+        throw new Error('unsupported TIFF layout/predictor for corner alpha read');
+      } else {
+        const offs = await getNums(tags[273]), cnts = await getNums(tags[279]);
+        const rowsPerStrip = Math.max(1, rps || height), bytesPer = bps / 8;
+        const rowBytes = width * spp * bytesPer;
+        const getRow = async (y) => {
+          const si = Math.floor(y / rowsPerStrip), inStripY = y - si * rowsPerStrip;
+          const rowsHere = Math.min(rowsPerStrip, height - si * rowsPerStrip);
+          const needed = rowsHere * rowBytes, off = offs[si], cnt = cnts[si];
+          if (off === undefined || cnt === undefined) throw new Error('TIFF strip missing');
+          const src = await reader(off, cnt); let raw;
+          if (compression === 1) raw = src;
+          else if (compression === 32773) raw = packbitsFirstBytes(src, needed);
+          else if (compression === 5) raw = lzwFirstBytes(src, needed);
+          else if (compression === 8 || compression === 32946) raw = await inflateFirstBytes(src, needed);
+          else throw new Error('TIFF compression ' + compression + ' not supported for alpha corners');
+          if (raw.length < needed) throw new Error('TIFF alpha strip decode incomplete');
+          const base = inStripY * rowBytes;
+          const readAlpha = (x) => {
+            const pos = base + (x * spp + alphaIndex) * bytesPer;
+            return bps === 8 ? raw[pos] : Math.round(dv(raw).getUint16(pos, le) / 257);
+          };
+          return [readAlpha(0), readAlpha(width - 1)];
+        };
+        const top = await getRow(0), bottom = await getRow(height - 1);
+        const corners = [top[0], top[1], bottom[0], bottom[1]];
+        transparency = { supported: true, transparent: corners.every(a => a <= 8), corners };
+      }
+    } catch (e) { transparency = { supported: false, transparent: false, reason: e.message + '; verify manually in Photoshop' }; }
+
+    return { width, height, dpi: Math.round(dpi), profile, paths: res.paths, clipName: res.clipName, bg, bgNote, transparency, format: 'tif' };
   };
 
   /* ---------- JPEG ---------- */
@@ -2518,7 +2562,7 @@ function specItems(r) {
   let bg = null;
   if (r.bg) {
     const p = r.bg.split('/').map((x) => parseInt(x));
-    bg = { txt: r.bg.replace(/\//g, ' / '), sw: p.length === 3 && p.every((x) => x >= 0 && x <= 255) ? `rgb(${p[0]},${p[1]},${p[2]})` : '' };
+    bg = { txt: r.bg.toLowerCase() === 'transparent' ? 'Transparent (four corners)' : r.bg.replace(/\//g, ' / '), sw: p.length === 3 && p.every((x) => x >= 0 && x <= 255) ? `rgb(${p[0]},${p[1]},${p[2]})` : '' };
   }
   return [
     { k: 'dims', ic: '📐', lb: 'Dimensions', v: sizeSpecText(r) },
@@ -2609,6 +2653,21 @@ async function rasterBg(file) {
     } catch (e2) { return { bg: null, note: 'browser could not decode image' }; }
   }
 }
+async function rasterTransparency(file, meta) {
+  const ext = extOf(file.name);
+  if ((ext === 'tif' || ext === 'tiff') && meta && meta.transparency) return meta.transparency;
+  try {
+    const bmp = await createImageBitmap(file);
+    const c = document.createElement('canvas'); c.width = 4; c.height = 4;
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    ctx.clearRect(0, 0, 4, 4); ctx.drawImage(bmp, 0, 0, 4, 4);
+    if (bmp.close) bmp.close();
+    const d = ctx.getImageData(0, 0, 4, 4).data;
+    const corners = [d[3], d[15], d[51], d[63]];
+    return { supported: true, transparent: corners.every(a => a <= 8), corners };
+  } catch (e) { return { supported: false, transparent: false, reason: 'Browser cannot decode this format for transparency; verify manually in Photoshop' }; }
+}
+
 async function readMeta(file) {
   const ext = extOf(file.name), reader = makeReader(file); let m;
   if (ext === 'tif' || ext === 'tiff') m = await QCMeta.readTiff(reader);
@@ -2627,6 +2686,7 @@ function makePlan(rules, meta, fails, ext) {
   if (fails.includes('dpi')) plan.dpi = rules.dpi;
   if (fails.includes('profile')) { const k = profileKey(rules.profile); if (k) plan.prof = k; else notes.push('Profile "' + rules.profile + '" is not supported by the fix script'); }
   if (fails.includes('bg')) {
+    if ((rules.bg || '').trim().toLowerCase() === 'transparent') { notes.push('Transparent-corner check is validation only; automatic pixel removal is not performed.'); }
     const rgb = (rules.bg || '').split('/').map((x) => parseInt(x));
     if (rgb.length === 3 && rgb.every((v) => v >= 0 && v <= 255)) {
       if (rules.checkPath) {
@@ -2705,16 +2765,23 @@ async function evaluate(it, rules, opts) {
       add('profile', 'Color profile', meta.profile || 'No embedded profile', QCMeta.profileMatches(rules.profile, meta.profile) ? 'pass' : 'fail', rules.profile);
     }
 
-    // background
+    // Background check: RGB sample or true transparency at all four corners.
     if (rules.bg) {
-      let st = 'fail', val;
-      if (!meta.bg) val = 'Unable to read' + (meta.bgNote ? ' (' + meta.bgNote + ')' : '') + ' – check manually';
+      let st = 'fail', val, expected = rules.bg;
+      if (rules.bg.trim().toLowerCase() === 'transparent') {
+        const tr = await rasterTransparency(file, meta);
+        expected = 'All four image corners transparent (alpha ≤ 8/255)';
+        if (!tr.supported) { st = 'warn'; val = 'Unverified – ' + tr.reason; }
+        else if (tr.transparent) { st = 'pass'; val = 'Transparent at all four corners'; }
+        else { st = 'fail'; val = tr.corners ? 'Corner alpha TL/TR/BL/BR: ' + tr.corners.join('/') + ' (0 = transparent, 255 = opaque)' : (tr.reason || 'One or more corners are opaque or partially transparent'); }
+      } else if (!meta.bg) val = 'Unable to read' + (meta.bgNote ? ' (' + meta.bgNote + ')' : '') + ' – check manually';
       else {
         const req = rules.bg.split('/').map((x) => parseInt(x)), det = meta.bg.split('/').map((x) => parseInt(x));
         if (req.length === 3 && req.every((v, k) => Math.abs(v - det[k]) <= opts.tol)) st = meta.bgNote === 'approx' ? 'warn' : 'pass';
         val = meta.bg + (meta.bgNote === 'approx' ? ' (approx – browser colour-converted)' : '');
+        expected = rules.bg + (opts.tol ? ' ±' + opts.tol : '');
       }
-      add('bg', 'Background (top-left RGB)', val, st, rules.bg + (opts.tol ? ' ±' + opts.tol : ''));
+      add('bg', rules.bg.trim().toLowerCase() === 'transparent' ? 'Background transparency (four corners)' : 'Background (top-left RGB)', val, st, expected);
     }
 
     // clipping path
@@ -2825,14 +2892,14 @@ async function walkDir(dh, prefix, out) {
 }
 $('pickFiles').onclick = async () => {
   prepPathClipboard();
-  if (window.showOpenFilePicker) {
+  if (window.showOpenFilePicker && location.protocol !== 'file:') {
     try { const hs = await window.showOpenFilePicker({ multiple: true, id: 'qc-files' }); await stage(hs.map((h) => ({ rel: h.name, fh: h })), '', 'selected files'); }
     catch (e) { if (e.name !== 'AbortError') toast('Could not open files: ' + e.message, 'bad'); }
   } else $('fileInput').click();
 };
 $('pickFolder').onclick = async () => {
   prepPathClipboard();
-  if (window.showDirectoryPicker) {
+  if (window.showDirectoryPicker && location.protocol !== 'file:') {
     try {
       const dh = await window.showDirectoryPicker({ id: 'qc-folder', mode: 'read' });
       toast('Reading folder…'); const out = []; await walkDir(dh, dh.name + '/', out); await stage(out, dh.name, dh.name);
@@ -3482,7 +3549,7 @@ function openEditor(i) {
 $('saveRule').onclick = () => {
   const row = [$('fJob').value.trim(), $('fPreset').value.trim(), $('fExt').value.trim(), $('fW').value.trim(), $('fH').value.trim(), $('fDpi').value.trim() || '300', $('fChk').value, $('fPath').value.trim(), $('fProf').value.trim(), $('fBg').value.trim()];
   if (!row[0] || !row[1]) return toast('Job ID and Category are required', 'bad');
-  if (row[9] && !/^\d{1,3}\/\d{1,3}\/\d{1,3}$/.test(row[9])) return toast('Background must look like 255/255/255', 'bad');
+  if (row[9] && row[9].toLowerCase() !== 'transparent' && !/^\d{1,3}\/\d{1,3}\/\d{1,3}$/.test(row[9])) return toast('Background must be RGB like 255/255/255 or TRANSPARENT', 'bad');
   const i = +$('edIdx').value; const was = i >= 0 ? ALL[i] : null; if (i >= 0) ALL[i] = row; else ALL.push(row);
   afterRulesChange((was ? 'Edited ' : 'Added ') + row[0] + ' / ' + row[1]); closeModal('editorModal'); toast('Rule saved', 'ok');
 };
@@ -3875,9 +3942,80 @@ function openRenameChecker(){const f=$('renameCheckerFrame');if(!f.srcdoc){const
 
 
 $('imgToolRun').onclick=async()=>{const files=[...($('imgToolFiles').files||[])];if(!files.length)return toast('Choose one or more images first','bad');const W=parseInt($('imgToolW').value)||0,H=parseInt($('imgToolH').value)||0,fit=$('imgToolFit').checked,q=Math.max(10,Math.min(100,parseInt($('imgToolQ').value)||90))/100,mime=$('imgToolFmt').value,host=$('imgToolResults');host.innerHTML='';$('imgToolMsg').textContent='Processing…';for(const f of files){try{const bmp=await createImageBitmap(f);let w=bmp.width,h=bmp.height;if(W||H){if(fit){const scale=Math.min(W?W/w:Infinity,H?H/h:Infinity);if(Number.isFinite(scale)){w=Math.max(1,Math.round(w*scale));h=Math.max(1,Math.round(h*scale));}}else{w=W||w;h=H||h;}}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(bmp,0,0,w,h);bmp.close?.();const blob=await new Promise(res=>c.toBlob(res,mime,q));if(!blob)throw Error('Browser could not encode this format');const url=URL.createObjectURL(blob),base=f.name.replace(/\.[^.]+$/,''),ext=mime==='image/jpeg'?'jpg':mime.split('/')[1];const row=document.createElement('div');row.className='card hcard';row.innerHTML=`<div class="hc-l"><div class="hc-t">${esc(f.name)}</div><div class="mut">${w} × ${h}px · ${(blob.size/1048576).toFixed(2)} MB</div></div><a class="btn sm primary" href="${url}" download="${esc(base)}_resized.${ext}">⬇ Download</a>`;host.appendChild(row);}catch(e){const row=document.createElement('div');row.className='card hcard';row.textContent=f.name+' — '+e.message;host.appendChild(row);}}$('imgToolMsg').textContent='Done · '+files.length+' file(s).';};
-$('aiKey').value=LS.get('JOB_QC_AI_KEY','');$('aiSave').onclick=()=>{LS.set('JOB_QC_AI_KEY',$('aiKey').value.trim());toast('AI key saved in this browser only','ok');};
-let AI_MSGS=[];$('aiSend').onclick=async()=>{const content=$('aiPrompt').value.trim(),key=$('aiKey').value.trim();if(!content)return;if(!key)return toast('Add your own provider key first','bad');AI_MSGS.push({role:'user',content});$('aiPrompt').value='';const log=$('aiChatLog');log.innerHTML+=`<div style="padding:8px 10px;margin:7px 0;border-radius:10px;background:rgba(71,120,255,.14)"><b>You</b><br>${esc(content).replace(/\n/g,'<br>')}</div>`;$('aiStatus').textContent='Waiting for model…';$('aiSend').disabled=true;try{const r=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json','HTTP-Referer':location.origin,'X-Title':'Job QC Inspector'},body:JSON.stringify({model:($('aiCustomModel').value.trim()||$('aiModel').value),messages:[{role:'system',content:'You are a helpful assistant for image production QC. Never claim to inspect files unless the user provides the specifications.'},...AI_MSGS]})});const j=await r.json();if(!r.ok)throw Error(j.error?.message||'Provider request failed ('+r.status+')');const answer=j.choices?.[0]?.message?.content||'No response';AI_MSGS.push({role:'assistant',content:answer});log.innerHTML+=`<div style="padding:8px 10px;margin:7px 0;border-radius:10px;background:var(--card)"><b>AI</b><br>${esc(answer).replace(/\n/g,'<br>')}</div>`;log.scrollTop=log.scrollHeight;$('aiStatus').textContent='';}catch(e){$('aiStatus').textContent=e.message;toast('AI request failed. Check the key, model availability, and network.','bad');}finally{$('aiSend').disabled=false;}};
-$('aiClear').onclick=()=>{AI_MSGS=[];$('aiChatLog').innerHTML='<p class="mut">Chat cleared.</p>';};$('aiPrompt').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('aiSend').click();}});
+const CHAT_KEY_STORAGE={google:'JOB_QC_GEMINI_KEY',openrouter:'JOB_QC_OPENROUTER_KEY'};
+let CHAT_HISTORY=[],CHAT_API_KEY='';
+function activeChatProvider(){return $('chatProvider').value||'google';}
+function activeChatKeyStorage(){return CHAT_KEY_STORAGE[activeChatProvider()];}
+function loadChatProviderUi(){const p=activeChatProvider(),key=LS.get(CHAT_KEY_STORAGE[p],'');$('chatModel').innerHTML=p==='google'?'<option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite · Free tier</option><option value="gemini-3-flash-preview">Gemini 3 Flash Preview · Free tier</option>':'<option value="openrouter/free">Free Router · available free model</option><option value="openai/gpt-5-mini">ChatGPT / OpenAI · GPT-5 mini</option><option value="anthropic/claude-sonnet-4.5">Anthropic · Claude Sonnet 4.5</option><option value="google/gemini-3-flash-preview">Google · Gemini 3 Flash</option>';$('chatKeyLabel').textContent=p==='google'?'Google AI Studio API key':'OpenRouter API key';$('chatApiKey').placeholder=p==='google'?'Paste Google AI Studio key (AIza…)':'Paste OpenRouter key (sk-or-…)';$('chatGetKey').href=p==='google'?'https://aistudio.google.com/apikey':'https://openrouter.ai/keys';$('chatGetKey').textContent=p==='google'?'Get Google AI Studio key':'Get OpenRouter key';$('chatProviderNote').textContent=p==='google'?'Google AI Studio key only. Select a model marked Free; Google quotas/availability apply.':'OpenRouter key only. Free Router can choose an available free model; other listed models may be paid.';CHAT_API_KEY=key;$('chatApiKey').value=key;$('rememberChatKey').checked=!!key;$('chatKeyStatus').textContent=key?'Saved key loaded on this browser · ready':'Not verified';$('chatModelStatus').textContent=p==='google'?'Google AI Studio direct Gemini mode':'OpenRouter multi-model mode';}
+loadChatProviderUi();
+$('chatProvider').addEventListener('change',loadChatProviderUi);
+function addChatBubble(role,text,model){const box=$('chatMessages');if(!box)return;const wrap=document.createElement('div');wrap.style.cssText='margin:8px 0;display:flex;justify-content:'+(role==='user'?'flex-end':'flex-start');const b=document.createElement('div');b.style.cssText='max-width:88%;padding:10px 13px;border-radius:12px;white-space:pre-wrap;overflow-wrap:anywhere;background:'+(role==='user'?'#3446d3':'var(--card,#182235)')+';color:var(--text,#f1f5f9);border:1px solid var(--line,#28364d)';b.textContent=text;if(model&&role==='assistant'){const small=document.createElement('small');small.textContent=' · '+model;small.style.cssText='display:block;opacity:.65;margin-top:6px';b.appendChild(small);}wrap.appendChild(b);box.appendChild(wrap);box.scrollTop=box.scrollHeight;}
+async function chatFetchJson(url,opts,timeoutMs=15000){
+  for(let attempt=0;attempt<2;attempt++){
+    const controller=new AbortController();let timer;
+    const req=fetch(url,{...opts,signal:controller.signal}).then(async response=>{
+      let data={};try{data=await response.json()}catch(e){}
+      return {response,data};
+    });
+    const timeout=new Promise((resolve,reject)=>{timer=setTimeout(()=>{controller.abort();reject(new Error('The Gemini/OpenRouter request took over 15 seconds and was stopped. Check internet, browser network policy/CORS, API access and model quota. Key verification only checks the key/model endpoint; it does not guarantee generation access.'));},timeoutMs);});
+    let result;
+    try{result=await Promise.race([req,timeout]);}finally{clearTimeout(timer);}
+    if(attempt===0&&[429,500,502,503,504].includes(result.response.status)){
+      $('chatModelStatus').textContent='Temporary provider load · retrying once…';
+      await new Promise(resolve=>setTimeout(resolve,900));continue;
+    }
+    return result;
+  }
+}
+async function sendChat(){
+  const text=$('chatInput').value.trim(),key=CHAT_API_KEY,model=$('chatModel').value,provider=activeChatProvider();
+  if(!text)return toast('Write a message first','bad');
+  if(!key)return toast('Paste and confirm an API key for the selected provider first','bad');
+  $('chatInput').value='';
+  $('chatSend').disabled=true;$('chatSend').textContent='Sending…';$('chatInput').disabled=true;
+  $('chatModelStatus').textContent=provider==='google'?'Sending to Google Gemini · 15-second limit…':'Sending to OpenRouter · 15-second limit…';
+  try{
+    CHAT_HISTORY.push({role:'user',content:text});addChatBubble('user',text);
+    let response,data={},answer='';
+    if(provider==='google'){
+      const contents=CHAT_HISTORY.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
+      const out=await chatFetchJson('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent',{
+        method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},
+        body:JSON.stringify({systemInstruction:{parts:[{text:'You are a helpful multilingual assistant. Answer clearly and help with general questions and image production/QC workflows. Reply in the language used by the user.'}]},contents,generationConfig:{temperature:0.7,maxOutputTokens:1400}})
+      });response=out.response;data=out.data;
+      if(!response.ok)throw new Error(data?.error?.message||('HTTP '+response.status));
+      answer=(data?.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('').trim();
+      if(!answer)throw new Error(data?.promptFeedback?.blockReason||'Gemini returned no text; try another prompt or model.');
+    }else{
+      const out=await chatFetchJson('https://openrouter.ai/api/v1/chat/completions',{
+        method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json','X-Title':'Job QC Inspector Chat'},
+        body:JSON.stringify({model,messages:[{role:'system',content:'You are a helpful multilingual assistant. Answer clearly and help with general questions and image production/QC workflows. Reply in the language used by the user.'},...CHAT_HISTORY],temperature:0.7,max_tokens:1400})
+      });response=out.response;data=out.data;
+      if(!response.ok)throw new Error(data?.error?.message||('HTTP '+response.status));
+      answer=data?.choices?.[0]?.message?.content||'';
+      if(!answer)throw new Error('The selected model returned no text. Check the key, model and account limits.');
+    }
+    CHAT_HISTORY.push({role:'assistant',content:answer});addChatBubble('assistant',answer,data?.model||model);
+    $('chatInput').value='';$('chatModelStatus').textContent='Reply received · '+(data?.model||model);
+  }catch(e){
+    CHAT_HISTORY.pop();
+    if(/401|API_KEY_INVALID|invalid api key/i.test(String(e.message))){CHAT_API_KEY='';LS.set(activeChatKeyStorage(),'');$('rememberChatKey').checked=false;$('chatKeyStatus').textContent='Saved key rejected · verify the provider key';}
+    $('chatModelStatus').textContent='Chat request failed';addChatBubble('assistant','Request failed: '+e.message+'\nYour message is visible above. Re-enter it to retry.');
+  }finally{
+    $('chatSend').disabled=false;$('chatSend').textContent='Send';$('chatInput').disabled=false;$('chatInput').focus();
+  }
+}
+$('chatApiKey').addEventListener('input',()=>{CHAT_API_KEY='';const store=activeChatKeyStorage();if(LS.get(store,'')&&LS.get(store,'')!==$('chatApiKey').value.trim())LS.set(store,'');$('chatKeyStatus').textContent='Key changed · confirm again';});
+$('rememberChatKey').addEventListener('change',()=>{const store=activeChatKeyStorage();if(!$('rememberChatKey').checked){LS.set(store,'');$('chatKeyStatus').textContent='Will stay in memory until this page closes';}else if(CHAT_API_KEY&&CHAT_API_KEY===$('chatApiKey').value.trim()){LS.set(store,CHAT_API_KEY);$('chatKeyStatus').textContent=LS.get(store,'')===CHAT_API_KEY?'Saved on this browser':'Could not save in this browser';}else $('chatKeyStatus').textContent='Will remember after key confirmation';});
+$('chatKeyCheck').onclick=async()=>{const key=$('chatApiKey').value.trim(),provider=activeChatProvider(),model=$('chatModel').value;if(!key)return toast('Paste the selected provider API key first','bad');$('chatKeyCheck').disabled=true;$('chatKeyStatus').textContent='Checking key…';try{let url,headers;if(provider==='google'){url='https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model);headers={'x-goog-api-key':key};}else{url='https://openrouter.ai/api/v1/key';headers={'Authorization':'Bearer '+key};}const r=await fetch(url,{headers});let d={};try{d=await r.json();}catch(e){}if(!r.ok)throw new Error(d?.error?.message||('HTTP '+r.status));CHAT_API_KEY=key;const store=activeChatKeyStorage();if($('rememberChatKey').checked){LS.set(store,key);if(LS.get(store,'')!==key)throw new Error('Browser could not save the key locally; check browser storage/privacy settings');$('chatKeyStatus').textContent=(provider==='google'?'Gemini':'OpenRouter')+' key verified · saved on this browser';}else{LS.set(store,'');$('chatKeyStatus').textContent=(provider==='google'?'Gemini':'OpenRouter')+' key verified · memory only';}toast('Key verified. Validation did not send a chat prompt.','ok');}catch(e){CHAT_API_KEY='';$('chatKeyStatus').textContent='Key not accepted / model unavailable';toast('Could not verify: '+e.message+'. Check provider, key, model access and internet/CORS.','bad');}finally{$('chatKeyCheck').disabled=false;}};
+$('chatSend').onclick=sendChat;
+$('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}});
+$('chatClear').onclick=()=>{CHAT_HISTORY=[];$('chatMessages').innerHTML='';$('chatModelStatus').textContent='New conversation. Select a model and send a message.';};
+document.querySelectorAll('.chat-prompt').forEach(b=>b.onclick=()=>{$('chatInput').value=b.dataset.prompt;$('chatInput').focus();});
+$('chatCopy').onclick=async()=>{const last=[...CHAT_HISTORY].reverse().find(m=>m.role==='assistant');if(!last)return toast('No answer to copy yet','bad');try{await navigator.clipboard.writeText(last.content);toast('Last answer copied','ok');}catch(e){const ta=document.createElement('textarea');ta.value=last.content;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Last answer copied','ok');}};
+$('chatExport').onclick=()=>{if(!CHAT_HISTORY.length)return toast('No chat to export','bad');download('job_qc_ai_chat.txt',CHAT_HISTORY.map(m=>(m.role==='user'?'YOU':'AI')+'\n'+m.content).join('\n\n'),'text/plain;charset=utf-8');};
+$('chatModel').addEventListener('change',()=>{const opt=$('chatModel').selectedOptions[0];$('chatModelStatus').textContent=opt.textContent+' selected · access/quota depends on provider account.';});
+
 $('myAccountBtn').onclick=()=>openModal('myAccountModal');$('myLogout').onclick=()=>{MY_ACCOUNT='';updateMyAccountUi();toast('Signed out');};
 $('myCreate').onclick=()=>{const u=$('myUser').value.trim().toLowerCase(),p=$('myPass').value;if(!/^[a-z0-9._-]{3,32}$/.test(u))return $('myAccErr').textContent='Username: 3–32 letters, numbers, dot, underscore or hyphen.';if(p.length<6)return $('myAccErr').textContent='Password must be at least 6 characters.';const users=localUsers();if(users[u])return $('myAccErr').textContent='This username already exists in this browser.';users[u]=hashPw(p);LS.set('JOB_QC_LOCAL_USERS',JSON.stringify(users));MY_ACCOUNT=u;LS.set('JOB_QC_ACTIVE_USER',u);closeModal('myAccountModal');updateMyAccountUi();toast('Local account created. Rules are isolated to this profile.','ok');};
 $('myLogin').onclick=()=>{const u=$('myUser').value.trim().toLowerCase(),p=$('myPass').value,users=localUsers();if(!users[u]||users[u]!==hashPw(p))return $('myAccErr').textContent='Username or password is incorrect.';MY_ACCOUNT=u;LS.set('JOB_QC_ACTIVE_USER',u);closeModal('myAccountModal');updateMyAccountUi();toast('Signed in','ok');};
@@ -3907,5 +4045,5 @@ window.__QC = { buildPasteCommand, evaluate, makePlan, planList, entryFrom, buil
 })();
 
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4c026dcaeecfc55',t:'MTc5MjI0OTAwNQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d11f1fd9e99ec8',t:'MTc5MjQyNjk0Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
