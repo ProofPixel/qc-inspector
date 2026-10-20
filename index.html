@@ -2516,10 +2516,33 @@ const RULES_KEY = 'JOB_QC_RULES_V13', OLD_KEY = 'JOB_QC_MASTER_RULES_V12_ULTIMAT
 let ALL = [], DB = {}, SEL = { job: '', preset: '' }, BOOTED = false;
 
 function normRow(r) { const x = (r || []).map((v) => (v == null ? '' : String(v))); while (x.length < 10) x.push(''); return x.slice(0, 10); }
+const BUNDLED_RULES_SNAPSHOT_KEY = 'JOB_QC_BUNDLED_RULES_SNAPSHOT_V1';
+function reconcileBundledRules(localRows) {
+  const bundled = DEFAULT_MASTER_RULES.map(normRow);
+  let oldBundled = [];
+  try { oldBundled = JSON.parse(LS.get(BUNDLED_RULES_SNAPSHOT_KEY, '[]')) || []; } catch (e) {}
+  const keyOf = r => (String(r[0] || '').trim() + '|' + String(r[1] || '').trim()).toLowerCase();
+  const previous = new Map(oldBundled.map(r => [keyOf(r), normRow(r)]));
+  const rows = localRows.map(normRow);
+  for (const def of bundled) {
+    const key = keyOf(def), idx = rows.findIndex(r => keyOf(r) === key), prior = previous.get(key);
+    if (idx < 0) {
+      // Only append rules newly added to the shipped HTML; don't resurrect an old rule a user deleted.
+      if (!prior) rows.push(def);
+    } else if (prior && JSON.stringify(rows[idx]) === JSON.stringify(prior)) {
+      // If a row wasn't locally edited, refresh it when the server ships a newer definition.
+      rows[idx] = def;
+    }
+  }
+  LS.set(BUNDLED_RULES_SNAPSHOT_KEY, JSON.stringify(bundled));
+  return rows;
+}
 function loadRules() {
   let parsed = null;
   try { parsed = JSON.parse(LS.get(RULES_KEY) || LS.get(OLD_KEY) || 'null'); } catch (e) {}
-  ALL = (Array.isArray(parsed) && parsed.length ? parsed : DEFAULT_MASTER_RULES).map(normRow);
+  const local = Array.isArray(parsed) && parsed.length ? parsed.map(normRow) : null;
+  ALL = local ? reconcileBundledRules(local) : DEFAULT_MASTER_RULES.map(normRow);
+  if (!local) LS.set(BUNDLED_RULES_SNAPSHOT_KEY, JSON.stringify(DEFAULT_MASTER_RULES.map(normRow)));
   saveRules(); buildDb();
 }
 function saveRules() { LS.set(RULES_KEY, JSON.stringify(ALL)); }
@@ -4045,5 +4068,5 @@ window.__QC = { buildPasteCommand, evaluate, makePlan, planList, entryFrom, buil
 })();
 
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d11f1fd9e99ec8',t:'MTc5MjQyNjk0Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d7da0639035853',t:'MTc5MjQ5NzUxNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
