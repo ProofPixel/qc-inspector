@@ -4127,8 +4127,9 @@ window.__QC = { buildPasteCommand, evaluate, makePlan, planList, entryFrom, buil
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id), status=$('upStatus'), progress=$('upProgress');
-const ORT_URL='https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.webgpu.min.js';
-const WASM_PATH='https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/';
+const ORT_BASE=new URL('./ort/',location.href);
+const ORT_URL=new URL('ort.webgpu.min.js',ORT_BASE).href;
+const WASM_PATH=ORT_BASE.href;
 const BASE=new URL('./models/',location.href);
 let worker=null, workerUrl=null, workerPending=new Map(), workerInit={}, workerCallId=0, cancelRequested=false, selectedUpscaleFiles=[];
 const UPSCALE_WORKER_SOURCE=String.raw`'use strict';
@@ -4174,5 +4175,5 @@ $('upStart').onclick=async()=>{const files=[...selectedUpscaleFiles],kind=$('upM
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4f8e1158debfc55',t:'MTc5Mjg0MzgzNQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4f91f46dd7d8dfd',t:'MTc5Mjg0NjM4Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
