@@ -434,6 +434,7 @@ canvas.thumb{cursor:zoom-in}
         <button class="navb" data-page="myrules"><span>🧑‍💻</span>My Rules <em id="myRulesBadge">0</em></button>
         <button class="navb" data-page="freetools"><span>🧰</span>Free Tools <em>FREE</em></button>
         <button class="navb" data-page="aitools"><span>🤖</span>AI Tools <em>BETA</em></button>
+        <button class="navb" data-page="aiupscaler"><span>✨</span>AI Upscaler</button>
         <button class="navb" data-page="foldercheck"><span>🗂️</span>Rename Checker</button>
         <button class="navb" data-page="duplicatefind"><span>🧬</span>Find Duplicate Images</button>
         <button class="navb" data-page="metacheck"><span>🧾</span>Metadata Check</button>
@@ -632,6 +633,31 @@ canvas.thumb{cursor:zoom-in}
   <div id="chatMessages" aria-live="polite" style="height:52vh;min-height:300px;max-height:650px;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:12px;margin:12px 0;background:var(--bg2,#0b1220)"></div>
   <div class="fg" style="align-items:end"><div><label>Your message <small class="mut">Enter sends · Shift+Enter adds a line</small></label><textarea id="chatInput" class="inp" rows="3" placeholder="Write a message…" style="resize:vertical"></textarea></div><div style="flex:0 0 auto"><button class="btn primary" id="chatSend">Send</button></div></div>
  </div>
+
+</div>
+
+<!-- ================= AI IMAGE UPSCALER ================= -->
+<div class="page" id="pg-aiupscaler">
+ <div class="ph"><div><h2>✨ AI Image Upscaler</h2><p class="mut">Standalone browser tool · local processing · single or batch · 2×/3×/4× output</p></div></div>
+  <section class="card pcard" id="qcUpscaler" style="margin-top:18px">
+  <div class="warnbox">Your images are processed in this browser and are not uploaded. The ONNX Runtime library loads from jsDelivr; model files load from the <code>models/</code> folder next to this HTML. Deploy the HTML and the complete <code>models/</code> folder together over HTTPS. JPG, PNG and WebP supported; PSD/TIFF are not supported by this tool.</div>
+  <div class="drop up-drop" id="upDrop" style="margin-top:14px;padding:24px 18px">
+   <div class="ico">🖼️</div><h3>Add images to upscale</h3><p>Drop images here or choose from your device · JPG, PNG, WebP · up to 10 images, 4 MP each</p>
+   <div class="drop-actions"><button type="button" class="btn primary" id="upPickBtn">📂 Choose images</button><button type="button" class="btn" id="upClearBtn">Clear selection</button></div>
+   <div id="upFileSummary" class="mut" style="margin-top:12px">No images selected yet</div>
+   <div id="upFileList" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px"></div>
+   <input id="upFiles" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" multiple>
+  </div>
+  <div class="ph" style="margin:18px 0 8px"><div><h3 style="margin:0">⚙️ Model &amp; output settings</h3><p class="mut" style="margin:4px 0 0">Choose the AI model and final enlargement size.</p></div></div>
+  <div class="fg" style="margin-top:8px">
+   <div><label>AI model</label><select id="upModel" class="inp"><option value="fast">Fast · RealESR General x4v3 (4.7 MB)</option><option value="best">Best detail · RealESRGAN x4plus (requires 4 model files, about 67 MB)</option></select><p class="mut">The Best model downloads four weight parts on first use.</p></div>
+   <div><label>Output size</label><select id="upScale" class="inp"><option value="2">2×</option><option value="3">3×</option><option value="4" selected>4×</option></select><p class="mut">The model infers at 4×; 2×/3× are high-quality resizes of the AI result.</p></div>
+  </div>
+  <div class="rbar"><button class="btn primary" id="upStart">✨ Upscale selected images</button><button class="btn" id="upCancel" disabled>Cancel after current tile</button><span id="upStatus" class="mut" role="status">Choose images to begin. First model load may take a little time.</span></div>
+  <progress id="upProgress" max="100" value="0" style="width:100%;height:12px;display:none"></progress>
+  <div id="upResults" class="hlist" style="margin-top:12px"></div>
+ </section>
+ <div style="text-align:center;margin:18px 0 12px;padding:12px;color:var(--muted);font-size:12px;letter-spacing:.08em;text-transform:uppercase">AI Image Upscaler · Created by <strong style="color:var(--text);letter-spacing:.14em">SAJIB HOSSAIN</strong></div>
 </div>
 
 <!-- ================= DUPLICATE IMAGE FINDER ================= -->
@@ -4098,5 +4124,40 @@ window.__QC = { buildPasteCommand, evaluate, makePlan, planList, entryFrom, buil
 })();
 
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d933ee9ca85500',t:'MTc5MjUxMTY4NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id), status=$('upStatus'), progress=$('upProgress');
+const ORT_URL='https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.min.js';
+const WASM_PATH='https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/';
+const BASE=new URL('./models/',location.href);
+let ortPromise=null, sessions={}, cancelRequested=false, selectedUpscaleFiles=[];
+function loadOrt(){if(window.ort)return Promise.resolve(window.ort);if(!ortPromise)ortPromise=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=ORT_URL;s.crossOrigin='anonymous';s.onload=()=>window.ort?resolve(window.ort):reject(Error('ONNX Runtime did not initialize'));s.onerror=()=>reject(Error('Could not load ONNX Runtime from jsDelivr. Check internet access or allow the CDN in your network.'));document.head.appendChild(s);});return ortPromise;}
+async function getBytes(path){const r=await fetch(new URL(path,BASE),{cache:'force-cache'});if(!r.ok)throw Error('Model asset not found: models/'+path+' (HTTP '+r.status+'). Deploy the full models folder beside the HTML.');return r.arrayBuffer();}
+async function loadSession(kind){if(sessions[kind])return sessions[kind];status.textContent='Loading ONNX Runtime and model…';const ort=await loadOrt();ort.env.wasm.wasmPaths=WASM_PATH;ort.env.logLevel='error';let model,opts={executionProviders:['wasm'],graphOptimizationLevel:'all'};
+ if(kind==='fast'){model=await getBytes('realesr-general-x4v3.onnx');}
+ else {status.textContent='Loading best model weights (about 67 MB)…';const [graph,...parts]=await Promise.all(['RealESRGAN_x4plus.onnx','RealESRGAN_x4plus.onnx.data.part1','RealESRGAN_x4plus.onnx.data.part2','RealESRGAN_x4plus.onnx.data.part3','RealESRGAN_x4plus.onnx.data.part4'].map(getBytes));model=graph;const total=parts.reduce((n,b)=>n+b.byteLength,0),combined=new Uint8Array(total);let off=0;for(const b of parts){combined.set(new Uint8Array(b),off);off+=b.byteLength;}opts.externalData=[{path:'RealESRGAN_x4plus.onnx.data',data:combined.buffer}];}
+ const session=await ort.InferenceSession.create(model,opts);sessions[kind]=session;return session;}
+function reflect(i,n){if(n<=1)return 0;const period=2*(n-1);i=((i%period)+period)%period;return i<n?i:period-i;}
+function setTensorTile(src,w,h,xx,yy,ort){const size=288,plane=size*size,data=new Float32Array(3*plane);for(let y=0;y<size;y++){const sy=reflect(yy+y-16,h);for(let x=0;x<size;x++){const sx=reflect(xx+x-16,w),i=(sy*w+sx)*4,j=y*size+x;data[j]=src[i]/255;data[plane+j]=src[i+1]/255;data[2*plane+j]=src[i+2]/255;}}return new ort.Tensor('float32',data,[1,3,size,size]);}
+function outputTile(tensor,vw,vh,scale,dx,dy,outCtx){const dims=tensor.dims;if(dims.length!==4||dims[1]!==3||dims[2]<1152||dims[3]<1152)throw Error('Unexpected model output shape: '+dims.join('×'));const a=tensor.data,ow=dims[3],oh=dims[2],x0=64,y0=64,w4=vw*4,h4=vh*4,raw=new Uint8ClampedArray(w4*h4*4);for(let y=0;y<h4;y++){const base=((y+y0)*ow+x0)*1;for(let x=0;x<w4;x++){const k=y*w4+x,at=base+x;raw[k*4]=Math.round(Math.max(0,Math.min(1,a[at]))*255);raw[k*4+1]=Math.round(Math.max(0,Math.min(1,a[ow*oh+at]))*255);raw[k*4+2]=Math.round(Math.max(0,Math.min(1,a[2*ow*oh+at]))*255);raw[k*4+3]=255;}}const tile=document.createElement('canvas');tile.width=w4;tile.height=h4;tile.getContext('2d').putImageData(new ImageData(raw,w4,h4),0,0);outCtx.imageSmoothingEnabled=true;outCtx.imageSmoothingQuality='high';outCtx.drawImage(tile,0,0,w4,h4,dx*scale,dy*scale,vw*scale,vh*scale);}
+async function upscaleFile(file,session,scale,onTile){const bitmap=await createImageBitmap(file);const w=bitmap.width,h=bitmap.height;if(w*h>4_000_000){bitmap.close();throw Error('Image is larger than 4 megapixels; resize a copy first to protect browser memory.');}const input=document.createElement('canvas');input.width=w;input.height=h;const ix=input.getContext('2d',{willReadFrequently:true});ix.drawImage(bitmap,0,0);const pixels=ix.getImageData(0,0,w,h).data;const out=document.createElement('canvas');out.width=w*scale;out.height=h*scale;if(out.width>16384||out.height>16384){bitmap.close();throw Error('Output dimension exceeds this browser canvas limit.');}const ctx=out.getContext('2d');const xs=[];for(let x=0;x<w;x+=256)xs.push(x);const ys=[];for(let y=0;y<h;y+=256)ys.push(y);const tiles=xs.length*ys.length;let done=0;const ort=window.ort;for(const yy of ys){for(const xx of xs){if(cancelRequested){bitmap.close();throw Error('Cancelled by user.');}const vw=Math.min(256,w-xx),vh=Math.min(256,h-yy),tensor=setTensorTile(pixels,w,h,xx,yy,ort),result=await session.run({[session.inputNames[0]]:tensor}),outTensor=result[session.outputNames[0]];outputTile(outTensor,vw,vh,scale,xx,yy,ctx);done++;onTile(done,tiles);await new Promise(r=>setTimeout(r,0));}}
+ // Restore the source alpha channel, matching the supplied Python engine behavior.
+ ctx.globalCompositeOperation='destination-in';ctx.drawImage(input,0,0,w,h,0,0,out.width,out.height);ctx.globalCompositeOperation='source-over';bitmap.close();return await new Promise((resolve,reject)=>out.toBlob(b=>b?resolve(b):reject(Error('Browser could not encode the result.')),'image/png'));
+}
+function safeName(s){return s.replace(/\.[^.]+$/,'').replace(/[\\/:*?"<>|]/g,'_');}
+function showResult(file,blob,scale){const url=URL.createObjectURL(blob),card=document.createElement('article');card.className='card pcard';card.style.marginBottom='10px';const preview=document.createElement('img');preview.src=url;preview.alt='Upscaled '+file.name;preview.style.cssText='display:block;max-width:100%;max-height:260px;object-fit:contain;border-radius:8px;margin:0 auto 10px';const label=document.createElement('div');label.className='mut';label.textContent=file.name+' · '+scale+'× · '+(blob.size/1048576).toFixed(2)+' MB';const a=document.createElement('a');a.className='btn primary';a.href=url;a.download=safeName(file.name)+'_'+scale+'x.png';a.textContent='⬇ Download PNG';a.style.marginTop='10px';card.append(preview,label,a);$('upResults').prepend(card);}
+function isUpscaleImage(f){return /^image\/(jpeg|png|webp)$/i.test(f.type)||/\.(jpe?g|png|webp)$/i.test(f.name);}
+function paintUpscaleFiles(list){const incoming=[...list||[]],valid=incoming.filter(isUpscaleImage),skipped=incoming.length-valid.length;selectedUpscaleFiles=valid.slice(0,10);const summary=$('upFileSummary'),host=$('upFileList');host.replaceChildren();summary.textContent='No images selected yet';
+ if(selectedUpscaleFiles.length){const size=(selectedUpscaleFiles.reduce((n,f)=>n+f.size,0)/1048576).toFixed(1);summary.textContent=`${selectedUpscaleFiles.length} image${selectedUpscaleFiles.length===1?'':'s'} ready · ${size} MB total`;}else summary.textContent='No images selected yet';
+ selectedUpscaleFiles.forEach((f,i)=>{const chip=document.createElement('span');chip.style.cssText='display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid var(--line2);border-radius:999px;background:var(--bg2);color:var(--text);font-size:12px;max-width:100%';const name=document.createElement('span');name.textContent=f.name;name.style.cssText='max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';const remove=document.createElement('button');remove.type='button';remove.textContent='×';remove.title='Remove '+f.name;remove.setAttribute('aria-label','Remove '+f.name);remove.style.cssText='border:0;background:transparent;color:var(--muted);font-size:17px;cursor:pointer;padding:0 2px';remove.onclick=()=>{selectedUpscaleFiles.splice(i,1);paintUpscaleFiles(selectedUpscaleFiles);};chip.append(name,remove);host.appendChild(chip);});
+ if(skipped)status.textContent=`${skipped} unsupported file(s) skipped. Choose JPG, PNG or WebP.`;else if(valid.length>10)status.textContent='Only the first 10 images were selected for this batch.';else status.textContent=selectedUpscaleFiles.length?'Ready · choose a model and press Upscale.':'Choose images to begin. First model load may take a little time.';}
+$('upPickBtn').onclick=()=>$('upFiles').click();$('upClearBtn').onclick=()=>{selectedUpscaleFiles=[];$('upFiles').value='';paintUpscaleFiles([]);};$('upFiles').onchange=()=>{paintUpscaleFiles($('upFiles').files);$('upFiles').value='';};
+$('upDrop').addEventListener('dragover',e=>{e.preventDefault();$('upDrop').classList.add('over');});$('upDrop').addEventListener('dragleave',e=>{if(!$('upDrop').contains(e.relatedTarget))$('upDrop').classList.remove('over');});$('upDrop').addEventListener('drop',e=>{e.preventDefault();$('upDrop').classList.remove('over');paintUpscaleFiles(e.dataTransfer.files);});
+$('upCancel').onclick=()=>{cancelRequested=true;$('upCancel').disabled=true;status.textContent='Cancellation requested; finishing current tile…';};
+$('upStart').onclick=async()=>{const files=[...selectedUpscaleFiles],kind=$('upModel').value,scale=Number($('upScale').value);if(!files.length){status.textContent='Select at least one image first.';return;}if(files.length>10){status.textContent='Select up to 10 images per batch.';return;}if(files.some(f=>!/^image\/(jpeg|png|webp)$/.test(f.type))){status.textContent='Only JPG, PNG and WebP images are supported.';return;}cancelRequested=false;$('upStart').disabled=true;$('upCancel').disabled=false;progress.style.display='block';progress.value=0;$('upResults').innerHTML='';try{const session=await loadSession(kind);const totalFiles=files.length;for(let i=0;i<files.length;i++){const f=files[i];status.textContent=`Upscaling ${i+1}/${totalFiles}: ${f.name}`;try{const blob=await upscaleFile(f,session,scale,(d,t)=>{progress.value=((i+(d/t))/totalFiles)*100;status.textContent=`${i+1}/${totalFiles} · ${f.name} · tile ${d}/${t}`;});showResult(f,blob,scale);}catch(e){if(e.message==='Cancelled by user.')throw e;const err=document.createElement('div');err.className='warnbox';err.textContent=f.name+': '+e.message;$('upResults').prepend(err);}}status.textContent=cancelRequested?'Batch cancelled. Completed images remain downloadable.':'Finished · '+files.length+' image(s) checked. Download each PNG below.';}catch(e){status.textContent='Upscaler error: '+e.message;}finally{$('upStart').disabled=false;$('upCancel').disabled=true;cancelRequested=false;}};
+})();
+</script>
+
+</body>
 </html>
