@@ -474,9 +474,7 @@ canvas.thumb{cursor:zoom-in}
 
     <div class="opts">
       <span class="opts-t">Tolerance</span>
-      <label>Background ±<input type="number" id="bgTol" min="0" max="30" value="2"></label>
-      <label>Dimensions ±<input type="number" id="dimTol" min="0" max="50" value="0"> px</label>
-      <label>DPI ±<input type="number" id="dpiTol" min="0" max="50" value="0"></label>
+      
     </div>
 
     <div class="drop" id="drop">
@@ -624,13 +622,14 @@ canvas.thumb{cursor:zoom-in}
 
 <!-- ================= AI CHAT ================= -->
 <div class="page" id="pg-aitools">
- <div class="ph"><div><h2>🤖 AI Tools · Chat</h2><p class="mut">Use Google AI Studio directly, or select OpenRouter. Your provider API key stays in this browser profile.</p></div></div>
+ <div class="ph"><div><h2>🤖 AI Tools · Chat</h2><p class="mut">Use Google AI Studio or OpenRouter with your own key, or save your personal Oxion key securely to your Supabase account. Oxion image analysis is separate from the Upscaler.</p></div></div>
  <div class="card pcard">
-  <div class="warnbox">Choose <b>Google AI Studio</b> to use a direct Gemini API key, or <b>OpenRouter</b> for an OpenRouter key. The Remember option stores the selected provider's key only in this browser profile—not in the HTML. Anyone using that same profile may access it. Free model quotas and access depend on the provider/account.</div>
-  <div class="fg" style="margin-top:12px"><div><label>AI provider</label><select id="chatProvider" class="inp"><option value="google">Google AI Studio · direct Gemini API</option><option value="openrouter">OpenRouter · multi-model API</option></select><label id="chatKeyLabel" style="margin-top:10px">Google AI Studio API key</label><input id="chatApiKey" class="inp" type="password" autocomplete="off" placeholder="Paste Google AI Studio key (AIza…)"><div class="opts" style="margin:8px 0 2px"><label><input id="rememberChatKey" type="checkbox"> Remember this key on this PC/browser</label></div><button class="btn sm primary" id="chatKeyCheck" style="margin-top:8px">✓ Confirm &amp; use API key</button><span id="chatKeyStatus" class="mut" style="margin-left:8px">Not verified</span></div><div><label>Model</label><select id="chatModel" class="inp"><option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite · Free tier</option><option value="gemini-3-flash-preview">Gemini 3 Flash Preview · Free tier</option></select><p class="mut" id="chatProviderNote">Google API key only. Choose a model marked Free to avoid paid-tier models; limits can apply.</p></div></div>
+  <div class="warnbox">Choose Google/OpenRouter as before, or enter your own Oxion key. Oxion key is verified then encrypted in Supabase for your signed-in account; it is not stored in the browser. Each account uses its own Oxion balance. Attached Oxion images are sent to Oxion for analysis and are not stored by this app. Google/OpenRouter Remember keys remain in this browser profile. Model access and quotas apply.</div>
+  <div class="fg" style="margin-top:12px"><div><label>AI provider</label><select id="chatProvider" class="inp"><option value="google">Google AI Studio · direct Gemini API</option><option value="openrouter">OpenRouter · multi-model API</option><option value="oxion">OxionAI · personal key (securely saved)</option></select><label id="chatKeyLabel" style="margin-top:10px">Google AI Studio API key</label><input id="chatApiKey" class="inp" type="password" autocomplete="off" placeholder="Paste Google AI Studio key (AIza…)"><div class="opts" style="margin:8px 0 2px"><label><input id="rememberChatKey" type="checkbox"> Remember this key on this PC/browser</label></div><button class="btn sm primary" id="chatKeyCheck" style="margin-top:8px">✓ Confirm &amp; use API key</button><button class="btn sm" id="oxionForgetKey" style="display:none;margin:8px 0 0 6px">Forget saved Oxion key</button><span id="chatKeyStatus" class="mut" style="margin-left:8px">Not verified</span></div><div><label>Model</label><select id="chatModel" class="inp"><option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite · Free tier</option><option value="gemini-3-flash-preview">Gemini 3 Flash Preview · Free tier</option></select><p class="mut" id="chatProviderNote">Google API key only. Choose a model marked Free to avoid paid-tier models; limits can apply.</p></div></div>
   <div class="rbar"><a class="btn sm" id="chatGetKey" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Get Google AI Studio key</a><button class="btn sm" id="chatClear">New chat</button><button class="btn sm" id="chatCopy">Copy last answer</button><button class="btn sm" id="chatExport">Export chat</button><span class="mut" id="chatModelStatus">Select a model and enter your key to chat.</span></div>
   <div class="opts" style="margin:8px 0 12px"><span class="mut">Quick prompts:</span><button class="btn sm chat-prompt" data-prompt="Explain this QC issue in simple steps: ">Explain QC issue</button><button class="btn sm chat-prompt" data-prompt="Translate this into clear professional Bangla: ">Translate to Bangla</button><button class="btn sm chat-prompt" data-prompt="Draft a short polite client update about this image production task: ">Draft client update</button><button class="btn sm chat-prompt" data-prompt="Help me create a safe filename pattern for these requirements: ">Filename pattern</button></div>
   <div id="chatMessages" aria-live="polite" style="height:52vh;min-height:300px;max-height:650px;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:12px;margin:12px 0;background:var(--bg2,#0b1220)"></div>
+  <div id="oxionImagePanel" class="card" style="display:none;margin:10px 0;padding:10px"><label for="oxionImageFile">📎 Image for Oxion analysis</label><input id="oxionImageFile" class="inp" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><small class="mut" id="oxionImageStatus">One PNG, JPEG, WebP or GIF image, up to 3 MB. It will be sent to Oxion for analysis, not stored in this app.</small></div>
   <div class="fg" style="align-items:end"><div><label>Your message <small class="mut">Enter sends · Shift+Enter adds a line</small></label><textarea id="chatInput" class="inp" rows="3" placeholder="Write a message…" style="resize:vertical"></textarea></div><div style="flex:0 0 auto"><button class="btn primary" id="chatSend">Send</button></div></div>
  </div>
 
@@ -727,7 +726,8 @@ canvas.thumb{cursor:zoom-in}
     <input type="hidden" id="edIdx" value="-1">
     <div class="fg"><div><label>Job ID *</label><input class="inp" id="fJob"></div><div><label>Category / Preset *</label><input class="inp" id="fPreset"></div></div>
     <div class="fg"><div><label>Extensions</label><input class="inp" id="fExt" value=".jpg,.tif,.psd"></div><div><label>DPI</label><input class="inp" id="fDpi" value="300"></div></div>
-    <div class="fg"><div><label>Width (or &gt;=5000, or 2560/2336)</label><input class="inp" id="fW"></div><div><label>Height</label><input class="inp" id="fH"></div></div>
+    <div class="fg"><div><label>Width</label><input class="inp" id="fW" placeholder="e.g. 2953, >=5000, <=6000, or =2953"></div><div><label>Height</label><input class="inp" id="fH" placeholder="e.g. 2953, or =2953 for exact long side"></div></div>
+    <small class="mut" style="display:block;margin:-6px 0 12px">One plain value checks only that axis; <b>=N</b> in one field checks exact long side; <b>&gt;=N</b>/<b>&lt;=N</b> alone checks long-side limits; fill both fields for exact Width × Height. Use / for alternatives.</small>
     <div class="fg"><div><label>Check path?</label><select class="inp" id="fChk"><option>TRUE</option><option>FALSE</option></select></div><div><label>Target path name</label><input class="inp" id="fPath" placeholder="Path 1"></div></div>
     <div class="fg"><div><label>Color profile</label><input class="inp" id="fProf" placeholder="ECI-RGB / sRGB / Adobe RGB"></div><div><label>Background RGB or TRANSPARENT</label><input class="inp" id="fBg" placeholder="255/255/255 or TRANSPARENT"></div></div>
     <div style="text-align:right"><button class="btn primary" id="saveRule">Save rule</button></div>
@@ -2609,12 +2609,62 @@ function fillPresets() {
   sel.value = SEL.preset; renderSpecs();
 }
 function currentRules() { return DB[SEL.job] && DB[SEL.job][SEL.preset]; }
-function sizeSpecText(r) {
-  if (!r.rawW) return 'Any size';
-  if (r.rawW.includes('>=')) return 'Long side ≥ ' + (parseInt(r.rawW.replace('>=', '')) || 0) + ' px';
-  const ws = r.rawW.split('/').map((x) => parseInt(x) || 0), hs = r.rawH.split('/').map((x) => parseInt(x) || 0);
-  return ws.map((w, i) => { const h = hs[i] || hs[0]; return w + ' × ' + h + ' px'; }).join('  or  ');
+function parseDimensionTerm(raw) {
+  const s = (raw || '').trim();
+  if (!s) return { kind: 'blank', values: [] };
+  let m = s.match(/^=\s*(\d+(?:\s*\/\s*\d+)*)$/);
+  if (m) return { kind: 'longExact', values: m[1].split('/').map((x) => parseInt(x.trim()) || 0).filter((x) => x > 0) };
+  m = s.match(/^(>=|<=)\s*(\d+)$/);
+  if (m) return { kind: m[1] === '>=' ? 'min' : 'max', value: parseInt(m[2]) };
+  if (/^\d+(?:\s*\/\s*\d+)*$/.test(s)) return { kind: 'values', values: s.split('/').map((x) => parseInt(x.trim()) || 0).filter((x) => x > 0) };
+  return { kind: 'invalid', values: [], raw: s };
 }
+function dimensionRuleResult(rawW, rawH, meta, tolerance) {
+  const w = parseDimensionTerm(rawW), h = parseDimensionTerm(rawH), tol = Math.max(0, Number(tolerance) || 0);
+  const maxDim = Math.max(meta.width, meta.height), hasW = w.kind !== 'blank', hasH = h.kind !== 'blank';
+  if (!hasW && !hasH) return { ok: true, expected: 'Any size' };
+  if (w.kind === 'invalid' || h.kind === 'invalid') return { ok: false, expected: 'Invalid dimension rule' };
+  if (hasW !== hasH) {
+    const t = hasW ? w : h, axis = hasW ? 'width' : 'height';
+    if (t.kind === 'longExact') return { ok: t.values.some((n) => Math.abs(maxDim - n) <= tol), expected: 'Long side = ' + t.values.join(' or ') + ' px' };
+    if (t.kind === 'min') return { ok: maxDim >= t.value, expected: 'Long side ≥ ' + t.value + ' px' };
+    if (t.kind === 'max') return { ok: maxDim <= t.value, expected: 'Long side ≤ ' + t.value + ' px' };
+    return { ok: t.values.some((n) => Math.abs(meta[axis] - n) <= tol), expected: (axis === 'width' ? 'Width' : 'Height') + ' = ' + t.values.join(' or ') + ' px' };
+  }
+  // Preserve legacy master-rule behavior: matching >=/<= in both fields denotes a long-side bound.
+  if ((w.kind === 'min' || w.kind === 'max') && w.kind === h.kind && w.value === h.value) {
+    const op = w.kind === 'min' ? '≥' : '≤';
+    return { ok: w.kind === 'min' ? maxDim >= w.value : maxDim <= w.value, expected: 'Long side ' + op + ' ' + w.value + ' px' };
+  }
+  // Two numeric lists are paired alternatives, e.g. 2560/2336 by 3584/1144.
+  if (w.kind === 'values' && h.kind === 'values') {
+    let ok = false;
+    for (let i = 0; i < w.values.length; i++) {
+      const tw = w.values[i], th = h.values[i] || h.values[0];
+      if (tw && th && Math.abs(meta.width - tw) <= tol && Math.abs(meta.height - th) <= tol) { ok = true; break; }
+    }
+    const expected = w.values.map((tw, i) => tw + ' × ' + (h.values[i] || h.values[0]) + ' px').join(' or ');
+    return { ok, expected };
+  }
+  const axisMatch = (t, value) => {
+    if (t.kind === 'min') return value >= t.value;
+    if (t.kind === 'max') return value <= t.value;
+    if (t.kind === 'values' || t.kind === 'longExact') return t.values.some((n) => Math.abs(value - n) <= tol);
+    return false;
+  };
+  const ok = axisMatch(w, meta.width) && axisMatch(h, meta.height);
+  const describe = (t, axis) => {
+    const label = axis === 'width' ? 'Width' : 'Height';
+    if (t.kind === 'min') return label + ' ≥ ' + t.value;
+    if (t.kind === 'max') return label + ' ≤ ' + t.value;
+    return label + ' = ' + t.values.join(' or ');
+  };
+  return { ok, expected: describe(w, 'width') + ' and ' + describe(h, 'height') + ' px' };
+}
+function sizeSpecText(r) {
+  return dimensionRuleResult(r.rawW, r.rawH, { width: 0, height: 0 }, 0).expected;
+}
+
 function specItems(r) {
   const fmt = r.ext.map((e) => e.replace('.', '').toUpperCase()).join(' / ') || 'ANY';
   let bg = null;
@@ -2668,9 +2718,7 @@ document.addEventListener('click', (e) => {
 $('presetSel').onchange = () => { SEL.preset = $('presetSel').value; renderSpecs(); };
 
 /* options persistence */
-$('bgTol').value = LS.get('JOB_QC_BGTOL', '2'); $('bgTol').onchange = () => LS.set('JOB_QC_BGTOL', $('bgTol').value);
-$('dimTol').value = LS.get('JOB_QC_DIMTOL', '0'); $('dimTol').onchange = () => LS.set('JOB_QC_DIMTOL', $('dimTol').value);
-$('dpiTol').value = LS.get('JOB_QC_DPITOL', '0'); $('dpiTol').onchange = () => LS.set('JOB_QC_DPITOL', $('dpiTol').value);
+
 
 /* ================= full path ================= */
 function buildFull(rel) {
@@ -2756,7 +2804,7 @@ function makePlan(rules, meta, fails, ext) {
       } else notes.push('Background: criteria has no clipping path, so the area cannot be selected automatically');
     }
   }
-  if (fails.includes('dims') && rules.rawW && !rules.rawW.includes('>=')) {
+  if (fails.includes('dims') && rules.rawW && rules.rawH && !/[<>=]/.test(rules.rawW + rules.rawH)) {
     const ws = rules.rawW.split('/').map((x) => parseInt(x) || 0), hs = rules.rawH.split('/').map((x) => parseInt(x) || 0);
     const mw = meta.width, mh = meta.height; let size = null;
     for (let i = 0; i < ws.length && !size; i++) {
@@ -2797,23 +2845,9 @@ async function evaluate(it, rules, opts) {
   try {
     meta = await readMeta(file);
 
-    // dimensions
-    const maxDim = Math.max(meta.width, meta.height);
-    let dimOk = false, expDim = '';
-    if (!rules.rawW) { dimOk = true; expDim = 'Any'; }
-    else if (rules.rawW.includes('>=')) {
-      const min = parseInt(rules.rawW.replace('>=', '').trim()) || 5000;
-      dimOk = maxDim >= min; expDim = 'Long side ≥ ' + min + 'px';
-    } else {
-      const ws = rules.rawW.split('/').map((x) => parseInt(x.trim()) || 0);
-      const hs = rules.rawH.split('/').map((x) => parseInt(x.trim()) || 0);
-      for (let i = 0; i < ws.length; i++) {
-        const tw = ws[i], th = hs[i] || hs[0];
-        if (Math.abs(meta.width - tw) <= opts.dimTol && Math.abs(meta.height - th) <= opts.dimTol) { dimOk = true; break; }
-      }
-      expDim = ws.map((w, i) => { const h = hs[i] || hs[0]; return w + '×' + h + 'px'; }).join(' or ');
-    }
-    add('dims', 'Dimensions', meta.width + ' × ' + meta.height + ' px', dimOk ? 'pass' : 'fail', expDim + (opts.dimTol ? ' ±' + opts.dimTol + 'px' : ''));
+    // dimensions: supports exact pairs, width-only/height-only, and long-side rules.
+    const dimResult = dimensionRuleResult(rules.rawW, rules.rawH, meta, opts.dimTol);
+    add('dims', 'Dimensions', meta.width + ' × ' + meta.height + ' px', dimResult.ok ? 'pass' : 'fail', dimResult.expected + (opts.dimTol ? ' ±' + opts.dimTol + 'px' : ''));
 
     // dpi
     add('dpi', 'DPI / Resolution', meta.dpi ? meta.dpi + ' DPI' : 'Not set in file', (meta.dpi && Math.abs(meta.dpi - rules.dpi) <= opts.dpiTol) ? 'pass' : 'fail', rules.dpi + ' DPI' + (opts.dpiTol ? ' ±' + opts.dpiTol : ''));
@@ -2871,7 +2905,7 @@ const supportedExt = (n) => SUPPORTED.includes(extOf(n));
 const skipRel = (rel) => /(^|\/)_QC_[A-Z]+(\/|$)/i.test(rel);
 const jget = (k, d) => { try { const v = JSON.parse(LS.get(k, '')); return v == null ? d : v; } catch (e) { return d; } };
 const nz = (id) => Math.max(0, parseInt($(id).value) || 0);
-function tolOpts() { return { tol: nz('bgTol'), dimTol: nz('dimTol'), dpiTol: nz('dpiTol') }; }
+function tolOpts() { return { tol: 0, dimTol: 0, dpiTol: 0 }; }
 
 /* ---- folder path memory: type the path once, it is remembered per folder name ---- */
 const PATHMAP_KEY = 'JOB_QC_PATHMAP', RECENT_KEY = 'JOB_QC_RECENT';
@@ -3467,7 +3501,15 @@ function askPassword(title, okLabel, validate) {
 }
 
 /* ================= cloud (Supabase REST – optional) ================= */
-const CLOUD_DEFAULT = { url: 'https://xlbhxxmgzjpywjbkzaec.supabase.co', key: 'sb_publishable_2MdCSr3AUiLFHulb5pVZPA_HspgEs1r' };   // Public publishable key only; RLS still protects writes.
+const CLOUD_DEFAULT = { url: 'https://yoejgyxppwksplzwpout.supabase.co', key: 'sb_publishable_aCDcnftk___non2tvWmtuA_26B8ahHc' };
+// First launch of this configured build switches saved browser settings off any previous project.
+const CLOUD_DEFAULT_REV = 'qc-project-yoejgyxppwksplzwpout-v2';
+if (LS.get('JOB_QC_CLOUD_CFG_REV', '') !== CLOUD_DEFAULT_REV) {
+  LS.set('JOB_QC_CLOUD_URL', CLOUD_DEFAULT.url);
+  LS.set('JOB_QC_CLOUD_KEY', CLOUD_DEFAULT.key);
+  LS.set('JOB_QC_CLOUD_SESS', 'null');
+  LS.set('JOB_QC_CLOUD_CFG_REV', CLOUD_DEFAULT_REV);
+}
 const CLOUD = {
   session: (() => { try { return JSON.parse(LS.get('JOB_QC_CLOUD_SESS', 'null')); } catch (e) { return null; } })(),
   cfg() { const url = (LS.get('JOB_QC_CLOUD_URL', '') || '').trim(), key = (LS.get('JOB_QC_CLOUD_KEY', '') || '').trim(); return { url: (url || CLOUD_DEFAULT.url).replace(/\/+$/, ''), key: key || CLOUD_DEFAULT.key }; },
@@ -4021,12 +4063,50 @@ function openRenameChecker(){const f=$('renameCheckerFrame');if(!f.srcdoc){const
 
 $('imgToolRun').onclick=async()=>{const files=[...($('imgToolFiles').files||[])];if(!files.length)return toast('Choose one or more images first','bad');const W=parseInt($('imgToolW').value)||0,H=parseInt($('imgToolH').value)||0,fit=$('imgToolFit').checked,q=Math.max(10,Math.min(100,parseInt($('imgToolQ').value)||90))/100,mime=$('imgToolFmt').value,host=$('imgToolResults');host.innerHTML='';$('imgToolMsg').textContent='Processing…';for(const f of files){try{const bmp=await createImageBitmap(f);let w=bmp.width,h=bmp.height;if(W||H){if(fit){const scale=Math.min(W?W/w:Infinity,H?H/h:Infinity);if(Number.isFinite(scale)){w=Math.max(1,Math.round(w*scale));h=Math.max(1,Math.round(h*scale));}}else{w=W||w;h=H||h;}}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(bmp,0,0,w,h);bmp.close?.();const blob=await new Promise(res=>c.toBlob(res,mime,q));if(!blob)throw Error('Browser could not encode this format');const url=URL.createObjectURL(blob),base=f.name.replace(/\.[^.]+$/,''),ext=mime==='image/jpeg'?'jpg':mime.split('/')[1];const row=document.createElement('div');row.className='card hcard';row.innerHTML=`<div class="hc-l"><div class="hc-t">${esc(f.name)}</div><div class="mut">${w} × ${h}px · ${(blob.size/1048576).toFixed(2)} MB</div></div><a class="btn sm primary" href="${url}" download="${esc(base)}_resized.${ext}">⬇ Download</a>`;host.appendChild(row);}catch(e){const row=document.createElement('div');row.className='card hcard';row.textContent=f.name+' — '+e.message;host.appendChild(row);}}$('imgToolMsg').textContent='Done · '+files.length+' file(s).';};
 const CHAT_KEY_STORAGE={google:'JOB_QC_GEMINI_KEY',openrouter:'JOB_QC_OPENROUTER_KEY'};
-let CHAT_HISTORY=[],CHAT_API_KEY='';
+let CHAT_HISTORY=[],CHAT_API_KEY='',CHAT_HISTORY_PROVIDER='';
 function activeChatProvider(){return $('chatProvider').value||'google';}
 function activeChatKeyStorage(){return CHAT_KEY_STORAGE[activeChatProvider()];}
-function loadChatProviderUi(){const p=activeChatProvider(),key=LS.get(CHAT_KEY_STORAGE[p],'');$('chatModel').innerHTML=p==='google'?'<option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite · Free tier</option><option value="gemini-3-flash-preview">Gemini 3 Flash Preview · Free tier</option>':'<option value="openrouter/free">Free Router · available free model</option><option value="openai/gpt-5-mini">ChatGPT / OpenAI · GPT-5 mini</option><option value="anthropic/claude-sonnet-4.5">Anthropic · Claude Sonnet 4.5</option><option value="google/gemini-3-flash-preview">Google · Gemini 3 Flash</option>';$('chatKeyLabel').textContent=p==='google'?'Google AI Studio API key':'OpenRouter API key';$('chatApiKey').placeholder=p==='google'?'Paste Google AI Studio key (AIza…)':'Paste OpenRouter key (sk-or-…)';$('chatGetKey').href=p==='google'?'https://aistudio.google.com/apikey':'https://openrouter.ai/keys';$('chatGetKey').textContent=p==='google'?'Get Google AI Studio key':'Get OpenRouter key';$('chatProviderNote').textContent=p==='google'?'Google AI Studio key only. Select a model marked Free; Google quotas/availability apply.':'OpenRouter key only. Free Router can choose an available free model; other listed models may be paid.';CHAT_API_KEY=key;$('chatApiKey').value=key;$('rememberChatKey').checked=!!key;$('chatKeyStatus').textContent=key?'Saved key loaded on this browser · ready':'Not verified';$('chatModelStatus').textContent=p==='google'?'Google AI Studio direct Gemini mode':'OpenRouter multi-model mode';}
+function oxionFunctionUrl(path=''){return CLOUD.cfg().url+'/functions/v1/oxion-proxy'+path;}
+async function oxionRequest(path,body){
+  if(!(await CLOUD.ensure()))throw new Error('Sign in with your Supabase account first (Settings → Admin login).');
+  const c=CLOUD.cfg(),opts={headers:{apikey:c.key,Authorization:'Bearer '+CLOUD.session.access_token}};
+  if(body){opts.method='POST';opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(body);}
+  const r=await fetch(oxionFunctionUrl(path),opts),d=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(d?.error?.message||d?.message||('HTTP '+r.status));return d;
+}
+async function loadOxionModels(){
+  const status=$('chatModelStatus'),sel=$('chatModel');
+  try{
+    const state=await oxionRequest('/key/status');
+    if(activeChatProvider()!=='oxion')return;
+    if(!state.hasKey){sel.innerHTML='<option value="">Save your Oxion key first</option>';status.textContent='No key saved for this Supabase account. Paste your personal Oxion key above.';$('chatKeyStatus').textContent='No Oxion key saved for this account.';return;}
+    const d=await oxionRequest('/models'),models=(d.data||d.models||[]).map(x=>typeof x==='string'?x:x.id).filter(Boolean);
+    if(!models.length)throw new Error('Oxion returned no models. Check model access and service status.');
+    if(activeChatProvider()!=='oxion')return;
+    sel.innerHTML=models.map(id=>'<option value="'+esc(id)+'">'+esc(id)+'</option>').join('');
+    $('chatProviderNote').textContent='Your personal key is encrypted in Supabase and linked to your signed-in account. Vision support depends on the selected model.';
+    $('chatKeyStatus').textContent='Your Oxion key is saved securely for this Supabase account.';
+    status.textContent='Oxion connected · '+models.length+' models available';
+  }catch(e){if(activeChatProvider()==='oxion'){sel.innerHTML='<option value="">Oxion not ready</option>';status.textContent='Oxion setup needed · '+e.message;}}
+}
+function loadChatProviderUi(){
+  const p=activeChatProvider(),isOxion=p==='oxion',key=isOxion?'':LS.get(CHAT_KEY_STORAGE[p]||'','');
+  $('chatKeyLabel').style.display='';$('chatApiKey').style.display='';$('rememberChatKey').closest('.opts').style.display=isOxion?'none':'';$('chatKeyCheck').style.display='';$('chatGetKey').style.display='';$('oxionForgetKey').style.display=isOxion?'inline-block':'none';$('oxionImagePanel').style.display=isOxion?'block':'none';
+  if(!isOxion){$('chatModel').innerHTML=p==='google'?'<option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite · Free tier</option><option value="gemini-3-flash-preview">Gemini 3 Flash Preview · Free tier</option>':'<option value="openrouter/free">Free Router · available free model</option><option value="openai/gpt-5-mini">ChatGPT / OpenAI · GPT-5 mini</option><option value="anthropic/claude-sonnet-4.5">Anthropic · Claude Sonnet 4.5</option><option value="google/gemini-3-flash-preview">Google · Gemini 3 Flash</option>';}
+  $('chatKeyLabel').textContent=isOxion?'Your personal OxionAI API key':p==='google'?'Google AI Studio API key':'OpenRouter API key';
+  $('chatApiKey').placeholder=isOxion?'Paste your private Oxion key (saved encrypted to your account)':p==='google'?'Paste Google AI Studio key (AIza…)':'Paste OpenRouter key (sk-or-…)';
+  $('chatGetKey').href=isOxion?'https://oxionai.com/dashboard':p==='google'?'https://aistudio.google.com/apikey':'https://openrouter.ai/keys';
+  $('chatGetKey').textContent=isOxion?'Open Oxion Dashboard':p==='google'?'Get Google AI Studio key':'Get OpenRouter key';
+  $('chatKeyCheck').textContent=isOxion?'✓ Verify & save securely':'✓ Confirm & use API key';
+  $('chatProviderNote').textContent=isOxion?'Each Supabase account has its own key. It is encrypted server-side, never saved in this browser, and used only while signed in.':p==='google'?'Google AI Studio key only. Select a model marked Free; Google quotas/availability apply.':'OpenRouter key only. Free Router can choose an available free model; other listed models may be paid.';
+  CHAT_API_KEY=key;$('chatApiKey').value=key;$('rememberChatKey').checked=!!key;
+  $('chatKeyStatus').textContent=isOxion?'Checking your account key…':key?'Saved key loaded on this browser · ready':'Not verified';
+  $('chatModelStatus').textContent=isOxion?'Checking secure Oxion key vault…':p==='google'?'Google AI Studio direct Gemini mode':'OpenRouter multi-model mode';
+  if(isOxion){$('chatModel').innerHTML='<option value="">Checking saved Oxion key…</option>';loadOxionModels();}if($('oxionImageFile')){$('oxionImageFile').value='';$('oxionImageStatus').textContent='One PNG, JPEG, WebP or GIF image, up to 3 MB. It will be sent to Oxion for analysis, not stored in this app.';}
+}
 loadChatProviderUi();
-$('chatProvider').addEventListener('change',loadChatProviderUi);
+$('chatProvider').addEventListener('change',()=>{const next=activeChatProvider();if(CHAT_HISTORY_PROVIDER&&CHAT_HISTORY_PROVIDER!==next){CHAT_HISTORY=[];CHAT_HISTORY_PROVIDER='';$('chatMessages').innerHTML='';$('chatModelStatus').textContent='Provider changed · started a fresh conversation to keep chats separate.';}loadChatProviderUi();});
+$('oxionImageFile').addEventListener('change',()=>{const f=$('oxionImageFile').files?.[0];$('oxionImageStatus').textContent=f?f.name+' · '+(f.size/1048576).toFixed(2)+' MB · sent to Oxion only when you press Send':'One image up to 3 MB; sent to Oxion for analysis, not stored in this app.';});
 function addChatBubble(role,text,model){const box=$('chatMessages');if(!box)return;const wrap=document.createElement('div');wrap.style.cssText='margin:8px 0;display:flex;justify-content:'+(role==='user'?'flex-end':'flex-start');const b=document.createElement('div');b.style.cssText='max-width:88%;padding:10px 13px;border-radius:12px;white-space:pre-wrap;overflow-wrap:anywhere;background:'+(role==='user'?'#3446d3':'var(--card,#182235)')+';color:var(--text,#f1f5f9);border:1px solid var(--line,#28364d)';b.textContent=text;if(model&&role==='assistant'){const small=document.createElement('small');small.textContent=' · '+model;small.style.cssText='display:block;opacity:.65;margin-top:6px';b.appendChild(small);}wrap.appendChild(b);box.appendChild(wrap);box.scrollTop=box.scrollHeight;}
 async function chatFetchJson(url,opts,timeoutMs=15000){
   for(let attempt=0;attempt<2;attempt++){
@@ -4035,7 +4115,7 @@ async function chatFetchJson(url,opts,timeoutMs=15000){
       let data={};try{data=await response.json()}catch(e){}
       return {response,data};
     });
-    const timeout=new Promise((resolve,reject)=>{timer=setTimeout(()=>{controller.abort();reject(new Error('The Gemini/OpenRouter request took over 15 seconds and was stopped. Check internet, browser network policy/CORS, API access and model quota. Key verification only checks the key/model endpoint; it does not guarantee generation access.'));},timeoutMs);});
+    const timeout=new Promise((resolve,reject)=>{timer=setTimeout(()=>{controller.abort();reject(new Error('The request exceeded its time limit and was stopped. Check internet, provider status, model access and quota.'));},timeoutMs);});
     let result;
     try{result=await Promise.race([req,timeout]);}finally{clearTimeout(timer);}
     if(attempt===0&&[429,500,502,503,504].includes(result.response.status)){
@@ -4046,49 +4126,61 @@ async function chatFetchJson(url,opts,timeoutMs=15000){
   }
 }
 async function sendChat(){
-  const text=$('chatInput').value.trim(),key=CHAT_API_KEY,model=$('chatModel').value,provider=activeChatProvider();
-  if(!text)return toast('Write a message first','bad');
-  if(!key)return toast('Paste and confirm an API key for the selected provider first','bad');
-  $('chatInput').value='';
-  $('chatSend').disabled=true;$('chatSend').textContent='Sending…';$('chatInput').disabled=true;
-  $('chatModelStatus').textContent=provider==='google'?'Sending to Google Gemini · 15-second limit…':'Sending to OpenRouter · 15-second limit…';
+  const provider=activeChatProvider(),file=provider==='oxion'?$('oxionImageFile').files?.[0]:null;
+  let text=$('chatInput').value.trim();const key=CHAT_API_KEY,model=$('chatModel').value;
+  if(file&&file.size>3*1024*1024)return toast('Image must be 3 MB or smaller','bad');
+  if(file&&!['image/jpeg','image/png','image/webp','image/gif'].includes(file.type))return toast('Use a PNG, JPEG, WebP or GIF image','bad');
+  if(!text&&!file)return toast('Write a message or attach one image first','bad');
+  if(provider!=='oxion'&&!key)return toast('Paste and confirm an API key for the selected provider first','bad');
+  if(provider==='oxion'&&(!model||model===''))return toast('Select an Oxion model first','bad');
+  if(provider==='oxion'&&!(await CLOUD.ensure()))return toast('Sign in with your Supabase account to use Oxion','bad');
+  if(!text&&file)text='Please analyze this image for visible image-production or QC concerns. Describe observations and uncertainty; do not assume hidden metadata.';
+  $('chatInput').value='';$('chatSend').disabled=true;$('chatSend').textContent='Sending…';$('chatInput').disabled=true;
+  $('chatModelStatus').textContent=provider==='oxion'?'Sending securely to Oxion · up to 60 seconds…':provider==='google'?'Sending to Google Gemini · 15-second limit…':'Sending to OpenRouter · 15-second limit…';
+  const visibleText=text+(file?'\n[Image attached: '+file.name+']':'');
   try{
-    CHAT_HISTORY.push({role:'user',content:text});addChatBubble('user',text);
+    CHAT_HISTORY_PROVIDER=provider;CHAT_HISTORY.push({role:'user',content:visibleText});addChatBubble('user',visibleText);
     let response,data={},answer='';
     if(provider==='google'){
       const contents=CHAT_HISTORY.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
-      const out=await chatFetchJson('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent',{
-        method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},
-        body:JSON.stringify({systemInstruction:{parts:[{text:'You are a helpful multilingual assistant. Answer clearly and help with general questions and image production/QC workflows. Reply in the language used by the user.'}]},contents,generationConfig:{temperature:0.7,maxOutputTokens:1400}})
-      });response=out.response;data=out.data;
-      if(!response.ok)throw new Error(data?.error?.message||('HTTP '+response.status));
-      answer=(data?.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('').trim();
-      if(!answer)throw new Error(data?.promptFeedback?.blockReason||'Gemini returned no text; try another prompt or model.');
+      const out=await chatFetchJson('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({systemInstruction:{parts:[{text:'You are a helpful multilingual assistant. Answer clearly and help with general questions and image production/QC workflows. Reply in the language used by the user.'}]},contents,generationConfig:{temperature:0.7,maxOutputTokens:1400}})});response=out.response;data=out.data;
+      if(!response.ok)throw new Error(data?.error?.message||('HTTP '+response.status));answer=(data?.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('').trim();if(!answer)throw new Error(data?.promptFeedback?.blockReason||'Gemini returned no text; try another prompt or model.');
+    }else if(provider==='openrouter'){
+      const out=await chatFetchJson('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json','X-Title':'Job QC Inspector Chat'},body:JSON.stringify({model,messages:[{role:'system',content:'You are a helpful multilingual assistant. Answer clearly and help with general questions and image production/QC workflows. Reply in the language used by the user.'},...CHAT_HISTORY],temperature:0.7,max_tokens:1400})});response=out.response;data=out.data;
+      if(!response.ok)throw new Error(data?.error?.message||('HTTP '+response.status));answer=data?.choices?.[0]?.message?.content||'';if(!answer)throw new Error('The selected model returned no text. Check the key, model and account limits.');
     }else{
-      const out=await chatFetchJson('https://openrouter.ai/api/v1/chat/completions',{
-        method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json','X-Title':'Job QC Inspector Chat'},
-        body:JSON.stringify({model,messages:[{role:'system',content:'You are a helpful multilingual assistant. Answer clearly and help with general questions and image production/QC workflows. Reply in the language used by the user.'},...CHAT_HISTORY],temperature:0.7,max_tokens:1400})
-      });response=out.response;data=out.data;
-      if(!response.ok)throw new Error(data?.error?.message||('HTTP '+response.status));
-      answer=data?.choices?.[0]?.message?.content||'';
-      if(!answer)throw new Error('The selected model returned no text. Check the key, model and account limits.');
+      let content=[{type:'text',text}];if(file){const dataUrl=await new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>resolve(fr.result);fr.onerror=()=>reject(new Error('Could not read the selected image'));fr.readAsDataURL(file);});content.push({type:'image_url',image_url:{url:dataUrl}});}
+      const c=CLOUD.cfg(),messages=[{role:'system',content:'You are a helpful multilingual assistant for image production and QC. Analyze only visible evidence, state uncertainty, and never claim metadata or technical properties you cannot inspect. Reply in the language used by the user.'},...CHAT_HISTORY.slice(0,-1),{role:'user',content}];
+      const out=await chatFetchJson(c.url+'/functions/v1/oxion-proxy',{method:'POST',headers:{apikey:c.key,Authorization:'Bearer '+CLOUD.session.access_token,'Content-Type':'application/json'},body:JSON.stringify({model,messages,temperature:0.4,max_tokens:1200})},60000);response=out.response;data=out.data;
+      if(!response.ok)throw new Error(data?.error?.message||data?.message||('HTTP '+response.status));answer=data?.choices?.[0]?.message?.content||'';if(!answer)throw new Error('Oxion returned no text; check vision support, model access and usage limits.');
     }
-    CHAT_HISTORY.push({role:'assistant',content:answer});addChatBubble('assistant',answer,data?.model||model);
-    $('chatInput').value='';$('chatModelStatus').textContent='Reply received · '+(data?.model||model);
-  }catch(e){
-    CHAT_HISTORY.pop();
-    if(/401|API_KEY_INVALID|invalid api key/i.test(String(e.message))){CHAT_API_KEY='';LS.set(activeChatKeyStorage(),'');$('rememberChatKey').checked=false;$('chatKeyStatus').textContent='Saved key rejected · verify the provider key';}
-    $('chatModelStatus').textContent='Chat request failed';addChatBubble('assistant','Request failed: '+e.message+'\nYour message is visible above. Re-enter it to retry.');
-  }finally{
-    $('chatSend').disabled=false;$('chatSend').textContent='Send';$('chatInput').disabled=false;$('chatInput').focus();
-  }
+    CHAT_HISTORY.push({role:'assistant',content:answer});addChatBubble('assistant',answer,data?.model||model);$('chatInput').value='';$('chatModelStatus').textContent='Reply received · '+(data?.model||model);
+    if(provider==='oxion'){$('oxionImageFile').value='';$('oxionImageStatus').textContent='One PNG, JPEG, WebP or GIF image, up to 3 MB. It will be sent to Oxion for analysis, not stored in this app.';}
+  }catch(e){CHAT_HISTORY.pop();if(provider!=='oxion'&&/401|API_KEY_INVALID|invalid api key/i.test(String(e.message))){CHAT_API_KEY='';LS.set(activeChatKeyStorage(),'');$('rememberChatKey').checked=false;$('chatKeyStatus').textContent='Saved key rejected · verify the provider key';}$('chatModelStatus').textContent='Chat request failed';addChatBubble('assistant','Request failed: '+e.message+'\nYour message is visible above. Re-enter it to retry.');
+  }finally{$('chatSend').disabled=false;$('chatSend').textContent='Send';$('chatInput').disabled=false;$('chatInput').focus();}
 }
-$('chatApiKey').addEventListener('input',()=>{CHAT_API_KEY='';const store=activeChatKeyStorage();if(LS.get(store,'')&&LS.get(store,'')!==$('chatApiKey').value.trim())LS.set(store,'');$('chatKeyStatus').textContent='Key changed · confirm again';});
+$('chatApiKey').addEventListener('input',()=>{CHAT_API_KEY='';if(activeChatProvider()==='oxion'){$('chatKeyStatus').textContent=$('chatApiKey').value.trim()?'Will verify and encrypt after you save':'Key is not stored in this browser';return;}const store=activeChatKeyStorage();if(LS.get(store,'')&&LS.get(store,'')!==$('chatApiKey').value.trim())LS.set(store,'');$('chatKeyStatus').textContent='Key changed · confirm again';});
 $('rememberChatKey').addEventListener('change',()=>{const store=activeChatKeyStorage();if(!$('rememberChatKey').checked){LS.set(store,'');$('chatKeyStatus').textContent='Will stay in memory until this page closes';}else if(CHAT_API_KEY&&CHAT_API_KEY===$('chatApiKey').value.trim()){LS.set(store,CHAT_API_KEY);$('chatKeyStatus').textContent=LS.get(store,'')===CHAT_API_KEY?'Saved on this browser':'Could not save in this browser';}else $('chatKeyStatus').textContent='Will remember after key confirmation';});
-$('chatKeyCheck').onclick=async()=>{const key=$('chatApiKey').value.trim(),provider=activeChatProvider(),model=$('chatModel').value;if(!key)return toast('Paste the selected provider API key first','bad');$('chatKeyCheck').disabled=true;$('chatKeyStatus').textContent='Checking key…';try{let url,headers;if(provider==='google'){url='https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model);headers={'x-goog-api-key':key};}else{url='https://openrouter.ai/api/v1/key';headers={'Authorization':'Bearer '+key};}const r=await fetch(url,{headers});let d={};try{d=await r.json();}catch(e){}if(!r.ok)throw new Error(d?.error?.message||('HTTP '+r.status));CHAT_API_KEY=key;const store=activeChatKeyStorage();if($('rememberChatKey').checked){LS.set(store,key);if(LS.get(store,'')!==key)throw new Error('Browser could not save the key locally; check browser storage/privacy settings');$('chatKeyStatus').textContent=(provider==='google'?'Gemini':'OpenRouter')+' key verified · saved on this browser';}else{LS.set(store,'');$('chatKeyStatus').textContent=(provider==='google'?'Gemini':'OpenRouter')+' key verified · memory only';}toast('Key verified. Validation did not send a chat prompt.','ok');}catch(e){CHAT_API_KEY='';$('chatKeyStatus').textContent='Key not accepted / model unavailable';toast('Could not verify: '+e.message+'. Check provider, key, model access and internet/CORS.','bad');}finally{$('chatKeyCheck').disabled=false;}};
+$('chatKeyCheck').onclick=async()=>{
+ const key=$('chatApiKey').value.trim(),provider=activeChatProvider(),model=$('chatModel').value;
+ if(!key)return toast('Paste the selected provider API key first','bad');
+ $('chatKeyCheck').disabled=true;$('chatKeyStatus').textContent=provider==='oxion'?'Verifying and encrypting your key in Supabase…':'Checking key…';
+ try{
+  if(provider==='oxion'){
+   const d=await oxionRequest('',{action:'save_key',api_key:key});
+   $('chatApiKey').value='';CHAT_API_KEY='';$('chatKeyStatus').textContent='Key verified and encrypted for this Supabase account; not saved in this browser.';
+   toast('Oxion key verified and saved securely to your account','ok');await loadOxionModels();
+  }else{
+   let url,headers;if(provider==='google'){url='https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model);headers={'x-goog-api-key':key};}else{url='https://openrouter.ai/api/v1/key';headers={'Authorization':'Bearer '+key};}
+   const r=await fetch(url,{headers});let d={};try{d=await r.json();}catch(e){}if(!r.ok)throw new Error(d?.error?.message||('HTTP '+r.status));CHAT_API_KEY=key;const store=activeChatKeyStorage();if($('rememberChatKey').checked){LS.set(store,key);if(LS.get(store,'')!==key)throw new Error('Browser could not save the key locally; check browser storage/privacy settings');$('chatKeyStatus').textContent=(provider==='google'?'Gemini':'OpenRouter')+' key verified · saved on this browser';}else{LS.set(store,'');$('chatKeyStatus').textContent=(provider==='google'?'Gemini':'OpenRouter')+' key verified · memory only';}toast('Key verified. Validation did not send a chat prompt.','ok');
+  }
+ }catch(e){CHAT_API_KEY='';$('chatKeyStatus').textContent='Key not accepted or secure service unavailable';toast('Could not save/verify: '+e.message,'bad');}
+ finally{$('chatKeyCheck').disabled=false;}
+};
+$('oxionForgetKey').onclick=async()=>{if(!confirm('Delete your encrypted Oxion key from your Supabase account?'))return;$('oxionForgetKey').disabled=true;try{await oxionRequest('',{action:'delete_key'});$('chatApiKey').value='';$('chatModel').innerHTML='<option value="">Save your Oxion key first</option>';$('chatKeyStatus').textContent='Saved Oxion key deleted from your account.';$('chatModelStatus').textContent='Oxion key removed.';toast('Oxion key deleted','ok');}catch(e){toast('Could not delete key: '+e.message,'bad');}finally{$('oxionForgetKey').disabled=false;}};
 $('chatSend').onclick=sendChat;
 $('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}});
-$('chatClear').onclick=()=>{CHAT_HISTORY=[];$('chatMessages').innerHTML='';$('chatModelStatus').textContent='New conversation. Select a model and send a message.';};
+$('chatClear').onclick=()=>{CHAT_HISTORY=[];CHAT_HISTORY_PROVIDER='';$('chatMessages').innerHTML='';$('chatModelStatus').textContent='New conversation. Select a model and send a message.';};
 document.querySelectorAll('.chat-prompt').forEach(b=>b.onclick=()=>{$('chatInput').value=b.dataset.prompt;$('chatInput').focus();});
 $('chatCopy').onclick=async()=>{const last=[...CHAT_HISTORY].reverse().find(m=>m.role==='assistant');if(!last)return toast('No answer to copy yet','bad');try{await navigator.clipboard.writeText(last.content);toast('Last answer copied','ok');}catch(e){const ta=document.createElement('textarea');ta.value=last.content;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Last answer copied','ok');}};
 $('chatExport').onclick=()=>{if(!CHAT_HISTORY.length)return toast('No chat to export','bad');download('job_qc_ai_chat.txt',CHAT_HISTORY.map(m=>(m.role==='user'?'YOU':'AI')+'\n'+m.content).join('\n\n'),'text/plain;charset=utf-8');};
@@ -4134,6 +4226,7 @@ const BASE=new URL('./models/',location.href);
 let worker=null, workerUrl=null, workerPending=new Map(), workerInit={}, workerCallId=0, cancelRequested=false, selectedUpscaleFiles=[];
 const UPSCALE_WORKER_SOURCE=String.raw`(()=>{'use strict';
 let ortApi=null, sessions={};
+function shortError(e){return String(e&&e.message?e.message:e).replace(/\s+/g,' ').slice(0,150);}
 async function fetchBytes(url){const r=await fetch(url,{cache:'force-cache'});if(!r.ok)throw Error('Model file could not be loaded: '+url+' (HTTP '+r.status+')');return r.arrayBuffer();}
 async function loadSession(kind,baseUrl,ortUrl,wasmPath){
  if(!ortApi){importScripts(ortUrl);ortApi=self.ort;if(!ortApi)throw Error('ONNX Runtime worker failed to load');ortApi.env.wasm.wasmPaths=wasmPath;ortApi.env.logLevel='error';}
@@ -4142,23 +4235,23 @@ async function loadSession(kind,baseUrl,ortUrl,wasmPath){
  if(kind==='fast'){model=await fetchBytes(new URL('realesr-general-x4v3.onnx',baseUrl).href);}
  else{const names=['RealESRGAN_x4plus.onnx','RealESRGAN_x4plus.onnx.data.part1','RealESRGAN_x4plus.onnx.data.part2','RealESRGAN_x4plus.onnx.data.part3','RealESRGAN_x4plus.onnx.data.part4'];const all=await Promise.all(names.map(n=>fetchBytes(new URL(n,baseUrl).href)));model=all[0];const total=all.slice(1).reduce((s,b)=>s+b.byteLength,0),joined=new Uint8Array(total);let pos=0;for(let i=1;i<all.length;i++){joined.set(new Uint8Array(all[i]),pos);pos+=all[i].byteLength;}externalData=[{path:'RealESRGAN_x4plus.onnx.data',data:joined.buffer}];}
  const opts={graphOptimizationLevel:'all',executionProviders:(self.navigator&&navigator.gpu)?['webgpu','wasm']:['wasm']};if(externalData.length)opts.externalData=externalData;
- let session,provider=(self.navigator&&navigator.gpu)?'WebGPU preferred (WASM fallback)':'WASM CPU';
- try{session=await ortApi.InferenceSession.create(model,opts);}catch(e){if(!(self.navigator&&navigator.gpu))throw e;opts.executionProviders=['wasm'];provider='WASM CPU fallback';session=await ortApi.InferenceSession.create(model,opts);}
- sessions[kind]={session,model,externalData,provider,opts,inputName:null,outputName:null};sessions[kind].inputName=session.inputNames[0];sessions[kind].outputName=session.outputNames[0];return sessions[kind];
+ let session,webgpuError='',provider=(self.navigator&&navigator.gpu)?'WebGPU preferred (WASM fallback)':'WASM CPU';
+ try{session=await ortApi.InferenceSession.create(model,opts);}catch(e){if(!(self.navigator&&navigator.gpu))throw e;webgpuError=shortError(e);opts.executionProviders=['wasm'];provider='WASM CPU fallback';session=await ortApi.InferenceSession.create(model,opts);}
+ sessions[kind]={session,model,externalData,provider,opts,webgpuError,inputName:null,outputName:null};sessions[kind].inputName=session.inputNames[0];sessions[kind].outputName=session.outputNames[0];return sessions[kind];
 }
-async function runTile(rec,tensorData,vw,vh){const ortTensor=new ortApi.Tensor('float32',new Float32Array(tensorData),[1,3,288,288]);let result;try{result=await rec.session.run({[rec.inputName]:ortTensor});}catch(e){if(!rec.provider.startsWith('WebGPU'))throw e;try{rec.session.release?.();}catch(_){}rec.opts.executionProviders=['wasm'];rec.session=await ort.InferenceSession.create(rec.model,rec.opts);rec.inputName=rec.session.inputNames[0];rec.outputName=rec.session.outputNames[0];rec.provider='WASM CPU fallback';result=await rec.session.run({[rec.inputName]:ortTensor});}
+async function runTile(rec,tensorData,vw,vh){const ortTensor=new ortApi.Tensor('float32',new Float32Array(tensorData),[1,3,288,288]);let result;try{result=await rec.session.run({[rec.inputName]:ortTensor});}catch(e){if(!rec.provider.startsWith('WebGPU'))throw e;rec.webgpuError=shortError(e);try{rec.session.release?.();}catch(_){}rec.opts.executionProviders=['wasm'];rec.session=await ortApi.InferenceSession.create(rec.model,rec.opts);rec.inputName=rec.session.inputNames[0];rec.outputName=rec.session.outputNames[0];rec.provider='WASM CPU fallback';result=await rec.session.run({[rec.inputName]:ortTensor});}
  const t=result[rec.outputName],dims=t.dims;if(dims.length!==4||dims[1]!==3||dims[2]<1152||dims[3]<1152)throw Error('Unexpected model output shape: '+dims.join('×'));const a=t.data,ow=dims[3],oh=dims[2],w4=vw*4,h4=vh*4,raw=new Uint8ClampedArray(w4*h4*4),plane=ow*oh;
  for(let y=0;y<h4;y++){const base=(y+64)*ow+64;for(let x=0;x<w4;x++){const k=y*w4+x,at=base+x;raw[k*4]=Math.round(Math.max(0,Math.min(1,a[at]))*255);raw[k*4+1]=Math.round(Math.max(0,Math.min(1,a[plane+at]))*255);raw[k*4+2]=Math.round(Math.max(0,Math.min(1,a[2*plane+at]))*255);raw[k*4+3]=255;}}
- return {raw:raw.buffer,provider:rec.provider};
+ return {raw:raw.buffer,provider:rec.provider,webgpuError:rec.webgpuError||''};
 }
-self.onmessage=async function(e){const m=e.data||{};try{if(m.type==='init'){const rec=await loadSession(m.kind,m.baseUrl,m.ortUrl,m.wasmPath);self.postMessage({id:m.id,type:'ready',provider:rec.provider});}else if(m.type==='tile'){const rec=sessions[m.kind];if(!rec)throw Error('Model session is not ready');const out=await runTile(rec,m.tensor,m.vw,m.vh);self.postMessage({id:m.id,type:'tile',raw:out.raw,provider:out.provider},[out.raw]);}}catch(err){self.postMessage({id:m.id,type:'error',message:err&&err.message?err.message:String(err)});}};})();`;
+self.onmessage=async function(e){const m=e.data||{};try{if(m.type==='init'){const rec=await loadSession(m.kind,m.baseUrl,m.ortUrl,m.wasmPath);self.postMessage({id:m.id,type:'ready',provider:rec.provider});}else if(m.type==='tile'){const rec=sessions[m.kind];if(!rec)throw Error('Model session is not ready');const out=await runTile(rec,m.tensor,m.vw,m.vh);self.postMessage({id:m.id,type:'tile',raw:out.raw,provider:out.provider,webgpuError:out.webgpuError},[out.raw]);}}catch(err){self.postMessage({id:m.id,type:'error',message:err&&err.message?err.message:String(err)});}};})();`;
 function startUpscaleWorker(){if(worker)return;const blob=new Blob([UPSCALE_WORKER_SOURCE],{type:'text/javascript'});workerUrl=URL.createObjectURL(blob);worker=new Worker(workerUrl);worker.onmessage=e=>{const m=e.data||{},p=workerPending.get(m.id);if(!p)return;workerPending.delete(m.id);if(m.type==='error')p.reject(Error(m.message||'Worker failed'));else p.resolve(m);};worker.onerror=e=>{const err=Error(e.message||'Upscaler worker stopped');for(const p of workerPending.values())p.reject(err);workerPending.clear();worker?.terminate();worker=null;if(workerUrl){URL.revokeObjectURL(workerUrl);workerUrl=null;}};}
 function workerRequest(message,transfer=[]){startUpscaleWorker();const id=++workerCallId;return new Promise((resolve,reject)=>{workerPending.set(id,{resolve,reject});try{worker.postMessage({...message,id},transfer);}catch(e){workerPending.delete(id);reject(e);}});}
 async function ensureWorkerSession(kind){if(workerInit[kind])return workerInit[kind];workerInit[kind]=workerRequest({type:'init',kind,baseUrl:BASE.href,ortUrl:ORT_URL,wasmPath:WASM_PATH}).then(r=>r.provider).catch(e=>{delete workerInit[kind];throw e;});return workerInit[kind];}
 function reflect(i,n){if(n<=1)return 0;const period=2*(n-1);i=((i%period)+period)%period;return i<n?i:period-i;}
 function setTensorTile(src,w,h,xx,yy){const size=288,plane=size*size,data=new Float32Array(3*plane);for(let y=0;y<size;y++){const sy=reflect(yy+y-16,h);for(let x=0;x<size;x++){const sx=reflect(xx+x-16,w),i=(sy*w+sx)*4,j=y*size+x;data[j]=src[i]/255;data[plane+j]=src[i+1]/255;data[2*plane+j]=src[i+2]/255;}}return data;}
 function outputTile(buffer,vw,vh,scale,dx,dy,outCtx){const w4=vw*4,h4=vh*4,raw=new Uint8ClampedArray(buffer),tile=document.createElement('canvas');tile.width=w4;tile.height=h4;tile.getContext('2d').putImageData(new ImageData(raw,w4,h4),0,0);outCtx.imageSmoothingEnabled=true;outCtx.imageSmoothingQuality='high';outCtx.drawImage(tile,0,0,w4,h4,dx*scale,dy*scale,vw*scale,vh*scale);}
-async function upscaleFile(file,kind,scale,onTile){let bitmap;try{bitmap=await createImageBitmap(file);}catch(e){throw Error('This browser cannot decode this image format. Export a copy as JPG, PNG or WebP and retry.');}const w=bitmap.width,h=bitmap.height;const input=document.createElement('canvas');input.width=w;input.height=h;const ix=input.getContext('2d',{willReadFrequently:true});if(!ix){bitmap.close();throw Error('Browser could not allocate the input canvas.');}ix.drawImage(bitmap,0,0);const pixels=ix.getImageData(0,0,w,h).data;const out=document.createElement('canvas');out.width=w*scale;out.height=h*scale;if(out.width>32767||out.height>32767){bitmap.close();throw Error('Output side is over the browser canvas limit. Try a lower scale.');}const ctx=out.getContext('2d');if(!ctx){bitmap.close();throw Error('This browser could not allocate the output canvas. Try a lower scale or a smaller image.');}const xs=[];for(let x=0;x<w;x+=256)xs.push(x);const ys=[];for(let y=0;y<h;y+=256)ys.push(y);const tiles=xs.length*ys.length;let done=0;for(const yy of ys){for(const xx of xs){if(cancelRequested){bitmap.close();throw Error('Cancelled by user.');}const vw=Math.min(256,w-xx),vh=Math.min(256,h-yy),tensor=setTensorTile(pixels,w,h,xx,yy),reply=await workerRequest({type:'tile',kind,tensor:tensor.buffer,vw,vh},[tensor.buffer]);outputTile(reply.raw,vw,vh,scale,xx,yy,ctx);done++;onTile(done,tiles,reply.provider);await new Promise(r=>setTimeout(r,0));}}
+async function upscaleFile(file,kind,scale,onTile){let bitmap;try{bitmap=await createImageBitmap(file);}catch(e){throw Error('This browser cannot decode this image format. Export a copy as JPG, PNG or WebP and retry.');}const w=bitmap.width,h=bitmap.height;const input=document.createElement('canvas');input.width=w;input.height=h;const ix=input.getContext('2d',{willReadFrequently:true});if(!ix){bitmap.close();throw Error('Browser could not allocate the input canvas.');}ix.drawImage(bitmap,0,0);const pixels=ix.getImageData(0,0,w,h).data;const out=document.createElement('canvas');out.width=w*scale;out.height=h*scale;if(out.width>32767||out.height>32767){bitmap.close();throw Error('Output side is over the browser canvas limit. Try a lower scale.');}const ctx=out.getContext('2d');if(!ctx){bitmap.close();throw Error('This browser could not allocate the output canvas. Try a lower scale or a smaller image.');}const xs=[];for(let x=0;x<w;x+=256)xs.push(x);const ys=[];for(let y=0;y<h;y+=256)ys.push(y);const tiles=xs.length*ys.length;let done=0;for(const yy of ys){for(const xx of xs){if(cancelRequested){bitmap.close();throw Error('Cancelled by user.');}const vw=Math.min(256,w-xx),vh=Math.min(256,h-yy),tensor=setTensorTile(pixels,w,h,xx,yy),reply=await workerRequest({type:'tile',kind,tensor:tensor.buffer,vw,vh},[tensor.buffer]);outputTile(reply.raw,vw,vh,scale,xx,yy,ctx);done++;onTile(done,tiles,reply.provider,reply.webgpuError);await new Promise(r=>setTimeout(r,0));}}
  ctx.globalCompositeOperation='destination-in';ctx.drawImage(input,0,0,w,h,0,0,out.width,out.height);ctx.globalCompositeOperation='source-over';bitmap.close();return await new Promise((resolve,reject)=>out.toBlob(b=>b?resolve(b):reject(Error('Browser could not encode the result.')),'image/png'));
 }
 function safeName(s){return s.replace(/\.[^.]+$/,'').replace(/[\\/:*?"<>|]/g,'_');}
@@ -4171,9 +4264,9 @@ function paintUpscaleFiles(list){const incoming=[...list||[]],valid=incoming.fil
 $('upPickBtn').onclick=()=>$('upFiles').click();$('upClearBtn').onclick=()=>{selectedUpscaleFiles=[];$('upFiles').value='';paintUpscaleFiles([]);};$('upFiles').onchange=()=>{paintUpscaleFiles($('upFiles').files);$('upFiles').value='';};
 $('upDrop').addEventListener('dragover',e=>{e.preventDefault();$('upDrop').classList.add('over');});$('upDrop').addEventListener('dragleave',e=>{if(!$('upDrop').contains(e.relatedTarget))$('upDrop').classList.remove('over');});$('upDrop').addEventListener('drop',e=>{e.preventDefault();$('upDrop').classList.remove('over');paintUpscaleFiles(e.dataTransfer.files);});
 $('upCancel').onclick=()=>{cancelRequested=true;$('upCancel').disabled=true;status.textContent='Cancellation requested; finishing current tile…';};
-$('upStart').onclick=async()=>{const files=[...selectedUpscaleFiles],kind=$('upModel').value,scale=Number($('upScale').value);if(!files.length){status.textContent='Select at least one image first.';return;}if(files.length>10){status.textContent='Select up to 10 images per batch.';return;}cancelRequested=false;$('upStart').disabled=true;$('upCancel').disabled=false;progress.style.display='block';progress.value=0;$('upResults').innerHTML='';let successCount=0,failureCount=0;try{status.textContent=kind==='best'?'Loading Best model weights and runtime…':'Loading Fast model and runtime…';const provider=await ensureWorkerSession(kind);status.textContent='Ready · '+provider+' · processing locally';const totalFiles=files.length;for(let i=0;i<files.length;i++){const f=files[i];status.textContent=`Upscaling ${i+1}/${totalFiles}: ${f.name}`;try{const blob=await upscaleFile(f,kind,scale,(d,t,provider)=>{progress.value=((i+(d/t))/totalFiles)*100;status.textContent=`${i+1}/${totalFiles} · ${f.name} · tile ${d}/${t} · ${provider}`;});showResult(f,blob,scale);successCount++;}catch(e){if(e.message==='Cancelled by user.')throw e;failureCount++;const err=document.createElement('div');err.className='warnbox';err.textContent=f.name+': '+e.message;$('upResults').prepend(err);}}status.textContent=cancelRequested?'Batch cancelled. Completed images remain downloadable.':failureCount?`Finished with issues · ${successCount} succeeded, ${failureCount} failed. See the messages below.`:`Success · ${successCount} image(s) upscaled. Download each PNG below.`;}catch(e){status.textContent='Upscaler error: '+e.message;}finally{$('upStart').disabled=false;$('upCancel').disabled=true;cancelRequested=false;}};
+$('upStart').onclick=async()=>{const files=[...selectedUpscaleFiles],kind=$('upModel').value,scale=Number($('upScale').value);if(!files.length){status.textContent='Select at least one image first.';return;}if(files.length>10){status.textContent='Select up to 10 images per batch.';return;}cancelRequested=false;$('upStart').disabled=true;$('upCancel').disabled=false;progress.style.display='block';progress.value=0;$('upResults').innerHTML='';let successCount=0,failureCount=0;try{status.textContent=kind==='best'?'Loading Best model weights and runtime…':'Loading Fast model and runtime…';const provider=await ensureWorkerSession(kind);status.textContent='Ready · '+provider+' · processing locally';const totalFiles=files.length;for(let i=0;i<files.length;i++){const f=files[i];status.textContent=`Upscaling ${i+1}/${totalFiles}: ${f.name}`;try{const blob=await upscaleFile(f,kind,scale,(d,t,provider,gpuError)=>{progress.value=((i+(d/t))/totalFiles)*100;status.textContent=`${i+1}/${totalFiles} · ${f.name} · tile ${d}/${t} · ${provider}${gpuError?' · WebGPU error: '+gpuError:''}`;});showResult(f,blob,scale);successCount++;}catch(e){if(e.message==='Cancelled by user.')throw e;failureCount++;const err=document.createElement('div');err.className='warnbox';err.textContent=f.name+': '+e.message;$('upResults').prepend(err);}}status.textContent=cancelRequested?'Batch cancelled. Completed images remain downloadable.':failureCount?`Finished with issues · ${successCount} succeeded, ${failureCount} failed. See the messages below.`:`Success · ${successCount} image(s) upscaled. Download each PNG below.`;}catch(e){status.textContent='Upscaler error: '+e.message;}finally{$('upStart').disabled=false;$('upCancel').disabled=true;cancelRequested=false;}};
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4f935228b8f9ec8',t:'MTc5Mjg0NzI3OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
